@@ -1,1 +1,104 @@
- 
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstname    String
+  avatarUrl    String?  @map("avatar_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  goals     Goal[]
+  reminders Reminder[]
+  badges    UserBadge[]
+
+  @@map("users")
+}
+
+model Category {
+  id    String @id @default(uuid())
+  name  String @unique
+  color String
+  icon  String
+
+  goals Goal[]
+
+  @@map("categories")
+}
+
+model Goal {
+  id          String    @id @default(uuid())
+  userId      String    @map("user_id")
+  categoryId  String    @map("category_id")
+  title       String
+  description String?
+  imageUrl    String?   @map("image_url")
+  targetDate  DateTime? @map("target_date")
+  status      String    @default("active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  Category   @relation(fields: [categoryId], references: [id])
+  steps     Step[]
+  reminders Reminder[]
+
+  @@map("goals")
+}
+
+model Step {
+  id          String    @id @default(uuid())
+  goalId      String    @map("goal_id")
+  title       String
+  isCompleted Boolean   @default(false) @map("is_completed")
+  order       Int
+  completedAt DateTime? @map("completed_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@map("steps")
+}
+
+model Reminder {
+  id            String   @id @default(uuid())
+  goalId        String   @map("goal_id")
+  userId        String   @map("user_id")
+  frequency     String
+  nextTriggerAt DateTime @map("next_trigger_at")
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("reminders")
+}
+
+model Badge {
+  id           String @id @default(uuid())
+  name         String @unique
+  icon         String
+  description  String
+  conditionKey String @map("condition_key")
+
+  users UserBadge[]
+
+  @@map("badges")
+}
+
+model UserBadge {
+  id       String   @id @default(uuid())
+  userId   String   @map("user_id")
+  badgeId  String   @map("badge_id")
+  earnedAt DateTime @default(now()) @map("earned_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badge Badge @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
+  @@map("user_badges")
+}
