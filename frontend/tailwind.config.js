@@ -1,1 +1,67 @@
- 
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: '#f9f9ff',
+        surface: '#f9f9ff',
+        'surface-dim': '#dad9df',
+        'surface-bright': '#f9f9ff',
+        'surface-container-lowest': '#ffffff',
+        'surface-container-low': '#f3f3f9',
+        'surface-container': '#eeedf3',
+        'surface-container-high': '#e8e7ee',
+        'surface-container-highest': '#e2e2e8',
+        'surface-variant': '#e2e2e8',
+        'on-surface': '#1a1c20',
+        'on-surface-variant': '#434750',
+        'inverse-surface': '#2f3035',
+        'inverse-on-surface': '#f1f0f6',
+        outline: '#737781',
+        'outline-variant': '#c3c6d2',
+        'surface-tint': '#365e9e',
+        primary: '#0d3f7e',
+        'on-primary': '#ffffff',
+        'primary-container': '#2e5797',
+        'on-primary-container': '#b7ceff',
+        'inverse-primary': '#abc7ff',
+        secondary: '#006c4e',
+        'on-secondary': '#ffffff',
+        'secondary-container': '#83f5c6',
+        'on-secondary-container': '#007151',
+        tertiary: '#5f3700',
+        'on-tertiary': '#ffffff',
+        'tertiary-container': '#804b00',
+        'on-tertiary-container': '#ffc284',
+        error: '#ba1a1a',
+        'on-error': '#ffffff',
+        'error-container': '#ffdad6',
+        'on-error-container': '#93000a',
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
+      borderRadius: {
+        DEFAULT: '0.25rem',
+        lg: '0.5rem',
+        xl: '0.75rem',
+        '2xl': '1rem',
+        full: '9999px',
+      },
+      spacing: {
+        'container-padding': '20px',
+        'grid-gutter': '16px',
+      },
+      boxShadow: {
+        card: '0px 4px 20px rgba(0,0,0,0.06)',
+        soft: '0px 2px 8px rgba(0,0,0,0.04)',
+        progress: '0px 4px 20px rgba(46, 87, 151, 0.15)',
+      },
+    },
+  },
+  plugins: [],
+};
