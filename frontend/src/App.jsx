@@ -6,6 +6,8 @@ import Board from './pages/Board.jsx';
 import CreateGoal from './pages/CreateGoal.jsx';
 import GoalDetail from './pages/GoalDetail.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import Profile from './pages/Profile.jsx';
+import Badges from './pages/Badges.jsx';
 
 function App() {
   const location = useLocation();
@@ -20,6 +22,8 @@ function App() {
         <Route path="/goals/new" element={<CreateGoal />} />
         <Route path="/goals/:id" element={<GoalDetail />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/badges" element={<Badges />} />
       </Routes>
       {!hideNav && <BottomNav />}
     </div>

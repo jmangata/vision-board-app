@@ -7,6 +7,9 @@ function CreateGoal() {
   const [form, setForm] = useState({ title: '', description: '', targetDate: '', categoryId: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [photos, setPhotos] = useState([]);
+const [imageUrl, setImageUrl] = useState('');
+const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,6 +19,16 @@ function CreateGoal() {
     });
   }, []);
 
+const searchImages = async () => {
+  if (!searchQuery.trim()) return;
+  try {
+    const res = await api.get(`/unsplash/search?query=${searchQuery}`);
+    setPhotos(res.data);
+  } catch (err) {
+    console.error('Erreur recherche Unsplash', err);
+  }
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -23,6 +36,7 @@ function CreateGoal() {
     try {
       const payload = {
         ...form,
+        imageUrl,
         targetDate: form.targetDate ? new Date(form.targetDate).toISOString() : null,
       };
       await api.post('/goals', payload);
@@ -77,6 +91,43 @@ function CreateGoal() {
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
           </div>
+<div>
+  <label className="block text-sm font-semibold text-outline mb-2">Image de couverture (optionnel)</label>
+  <div className="flex gap-2 mb-3">
+    <input
+      placeholder="Ex: marathon, voyage, lecture..."
+      className="input-field flex-1"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchImages())}
+    />
+    <button type="button" onClick={searchImages} className="w-12 h-14 bg-primary-container text-white rounded-xl flex items-center justify-center">
+      <span className="material-symbols-outlined">search</span>
+    </button>
+  </div>
+  {imageUrl && (
+    <div className="relative mb-3">
+      <img src={imageUrl} alt="Couverture" className="w-full h-40 object-cover rounded-xl" />
+      <button type="button" onClick={() => setImageUrl('')} className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center">
+        <span className="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+  )}
+  {photos.length > 0 && (
+    <div className="grid grid-cols-3 gap-2">
+      {photos.map((photo) => (
+        <button
+          type="button"
+          key={photo.id}
+          onClick={() => { setImageUrl(photo.url); setPhotos([]); }}
+          className={`rounded-xl overflow-hidden border-2 transition-all ${imageUrl === photo.url ? 'border-primary-container' : 'border-transparent'}`}
+        >
+          <img src={photo.thumb} alt={photo.alt} className="w-full h-20 object-cover" />
+        </button>
+      ))}
+    </div>
+  )}
+</div>
 
           <div>
             <label className="block text-sm font-semibold text-outline mb-2">Catégorie</label>

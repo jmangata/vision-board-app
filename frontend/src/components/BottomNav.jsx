@@ -6,7 +6,7 @@ function BottomNav() {
     { path: '/', label: 'Board', icon: 'grid_view' },
     { path: '/dashboard', label: 'Stats', icon: 'bar_chart' },
     { path: '/badges', label: 'Badges', icon: 'emoji_events' },
-    { path: '/profile', label: 'Profile', icon: 'person' },
+    { path: '/profile', label: 'Profil', icon: 'person' },
   ];
 
   return (
@@ -21,7 +21,7 @@ function BottomNav() {
               active ? 'text-primary-container' : 'text-outline'
             }`}
           >
-            <span className="material-symbols-outlined text-2xl">{tab.icon}</span>
+            <span className="material-symbols-outlined text-2xl"  style={{ fontVariationSettings: active ? "'FILL' 1" : "'FILL' 0" }}>{tab.icon}</span>
             <span>{tab.label}</span>
           </Link>
         );

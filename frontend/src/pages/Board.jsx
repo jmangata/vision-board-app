@@ -37,16 +37,32 @@ function Board() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {goals.length === 0 && (
+  <div className="flex flex-col items-center justify-center mt-20 text-center">
+    <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">target</span>
+    <h2 className="text-lg font-semibold text-on-surface mb-2">Aucun objectif pour l'instant</h2>
+    <p className="text-sm text-outline mb-6">Commence par créer ton premier objectif !</p>
+    <Link to="/goals/new" className="h-12 px-8 bg-primary-container text-white rounded-full font-semibold pill-button flex items-center gap-2">
+      <span className="material-symbols-outlined">add</span>
+      Créer un objectif
+    </Link>
+  </div>
+)}
+      {goals.length > 0 && (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {goals.map((goal) => (
           <Link
             key={goal.id}
             to={`/goals/${goal.id}`}
             className="card p-4 flex flex-col gap-3 hover:shadow-lg transition-shadow"
           >
-            <div className="w-full aspect-[4/3] bg-surface-container rounded-xl overflow-hidden flex items-center justify-center">
-              <span className="material-symbols-outlined text-4xl text-outline-variant">image</span>
-            </div>
+<div className="w-full aspect-[4/3] bg-surface-container rounded-xl overflow-hidden flex items-center justify-center">
+  {goal.imageUrl ? (
+    <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" />
+  ) : (
+    <span className="material-symbols-outlined text-4xl text-outline-variant">image</span>
+  )}
+</div>
             <div>
               <span className="inline-block px-2 py-1 bg-primary-container/10 text-primary-container text-xs font-semibold rounded-full mb-1">
                 {goal.category?.name}
@@ -65,6 +81,7 @@ function Board() {
           </Link>
         ))}
       </div>
+      )}
     </div>
   );
 }
