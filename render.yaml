@@ -1,6 +1,5 @@
 databases:
   - name: visionboard-db
-    plan: free
     databaseName: visionboard
     user: visionboard_user
 
@@ -8,7 +7,6 @@ services:
   - type: web
     name: visionboard-api
     runtime: node
-    plan: starter
     rootDir: backend
     buildCommand: npm install && npx prisma generate && npx prisma db push && npm run seed
     startCommand: node index.js
@@ -36,10 +34,6 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: no-cache
     routes:
       - type: rewrite
         source: /*
