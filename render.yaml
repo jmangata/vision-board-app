@@ -16,7 +16,7 @@ services:
           name: visionboard-db
           property: connectionString
       - key: JWT_SECRET
-        generateValue: true
+        value: k8Xp2mN7qR4vW9zB3cF6hJ1dL5gT0yA8sE2uI4oP7nM
       - key: JWT_EXPIRES_IN
         value: 7d
       - key: UNSPLASH_ACCESS_KEY
