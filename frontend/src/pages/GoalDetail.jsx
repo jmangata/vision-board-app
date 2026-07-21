@@ -86,7 +86,7 @@ function GoalDetail() {
 
             <div className="mt-4">
               <div className="flex justify-between items-end mb-1">
-                <p className="text-sm font-semibold text-primary">Overall Progress</p>
+                <p className="text-sm font-semibold text-primary">Progression globale</p>
                 <p className="text-2xl font-bold text-primary">{progress}%</p>
               </div>
               <div className="h-3 w-full bg-surface-container rounded-full overflow-hidden">
@@ -101,7 +101,7 @@ function GoalDetail() {
 
         <section className="px-5 mt-6">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-semibold text-on-surface">Milestones</h3>
+            <h3 className="text-lg font-semibold text-on-surface">Étapes</h3>
             <span className="text-xs text-outline">{completed} of {total} completed</span>
           </div>
 
