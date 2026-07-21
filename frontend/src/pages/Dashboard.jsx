@@ -13,6 +13,9 @@ function Dashboard() {
   return (
     <div className="px-5 pt-6">
       <h1 className="text-2xl font-bold text-primary mb-6">Tableau de bord</h1>
+       <p className="text-sm text-outline mt-1">
+    Voici un récapitulatif de ta progression et de tes accomplissements.
+  </p>
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-surface-container-low p-4 rounded-xl">
           <p className="text-xs text-outline mb-1">Objectifs totaux</p>

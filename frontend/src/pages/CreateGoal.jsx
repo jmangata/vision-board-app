@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api.js';
+import { createGoal, uploadImage } from '../services/goalService.js';
 
 function CreateGoal() {
   const [categories, setCategories] = useState([]);
@@ -8,6 +9,7 @@ function CreateGoal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [photos, setPhotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
 const [imageUrl, setImageUrl] = useState('');
 const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
@@ -56,6 +58,26 @@ const searchImages = async () => {
     heart: 'favorite',
     map: 'flight',
   };
+  const handleFileUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    setError('Veuillez sélectionner une image.');
+    return;
+  }
+
+  setUploading(true);
+  setError('');
+  try {
+    const { data } = await uploadImage(file);
+    setImageUrl(data.imageUrl);
+  } catch (err) {
+    setError(err.response?.data?.message || "Erreur lors de l'upload de l'image");
+  } finally {
+    setUploading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -79,6 +101,7 @@ const searchImages = async () => {
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
             />
+             <p className="text-xs text-outline mt-2">Donne un nom clair et motivant à ton objectif.</p>
           </div>
 
           <div>
@@ -90,9 +113,22 @@ const searchImages = async () => {
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
+             <p className="text-xs text-outline mt-2">Explique brièvement pourquoi cet objectif compte pour toi.</p>
           </div>
 <div>
   <label className="block text-sm font-semibold text-outline mb-2">Image de couverture (optionnel)</label>
+  <p className="text-xs text-outline mb-3">
+    Recherche une image sur Unsplash ou choisis-en une depuis ton appareil.
+  </p>
+
+  <input
+    type="file"
+    accept="image/*"
+    onChange={handleFileUpload}
+    className="mb-3 text-sm text-outline file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-white hover:file:bg-primary-container/90"
+  />
+  {uploading && <p className="text-xs text-outline mb-2">Téléchargement en cours...</p>}
+
   <div className="flex gap-2 mb-3">
     <input
       placeholder="Ex: marathon, voyage, lecture..."
@@ -105,14 +141,7 @@ const searchImages = async () => {
       <span className="material-symbols-outlined">search</span>
     </button>
   </div>
-  {imageUrl && (
-    <div className="relative mb-3">
-      <img src={imageUrl} alt="Couverture" className="w-full h-40 object-cover rounded-xl" />
-      <button type="button" onClick={() => setImageUrl('')} className="absolute top-2 right-2 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center">
-        <span className="material-symbols-outlined text-sm">close</span>
-      </button>
-    </div>
-  )}
+  
   {photos.length > 0 && (
     <div className="grid grid-cols-3 gap-2">
       {photos.map((photo) => (

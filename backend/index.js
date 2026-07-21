@@ -10,6 +10,8 @@ import badgeRoutes from './src/routes/badgeRoutes.js';
 import reminderRoutes from './src/routes/reminderRoutes.js';
 import userRoutes from './src/routes/userRoutes.js';
 import unsplashRoutes from './src/routes/unsplashRoutes.js';
+import uploadRoutes from './src/routes/uploadRoutes.js';
+import suggestionRoutes from './src/routes/suggestionRoutes.js';
 
 dotenv.config();                 // Lit le fichier .env et injecte les variables dans process.env
 
@@ -28,6 +30,8 @@ app.use('/api/badges', badgeRoutes);
 app.use('/api/reminders', reminderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/unsplash', unsplashRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/suggestions', suggestionRoutes);
 
 // Route de test : vérifie que le serveur répond
 app.get('/api/health', (req, res) => {

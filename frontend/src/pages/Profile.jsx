@@ -105,6 +105,9 @@ function Profile() {
           </div>
           <div className="border-t border-surface-variant/30 pt-4">
             <p className="text-sm font-semibold text-outline mb-3">Changer le mot de passe (optionnel)</p>
+             <p className="text-xs text-outline mb-3">
+    Remplis ces champs uniquement si tu souhaites modifier ton mot de passe actuel.
+  </p>
             <div className="space-y-3">
               <input type="password" placeholder="Mot de passe actuel" className="input-field" value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} />
               <input type="password" placeholder="Nouveau mot de passe" className="input-field" value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} />
