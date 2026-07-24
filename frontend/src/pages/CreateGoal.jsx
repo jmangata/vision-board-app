@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api.js';
-import { createGoal, uploadImage } from '../services/goalService.js';
+import { createGoal, uploadImage,suggestSteps } from '../services/goalService.js';
+
 
 function CreateGoal() {
   const [categories, setCategories] = useState([]);
@@ -12,6 +13,11 @@ function CreateGoal() {
   const [uploading, setUploading] = useState(false);
 const [imageUrl, setImageUrl] = useState('');
 const [searchQuery, setSearchQuery] = useState('');
+const [suggestedSteps, setSuggestedSteps] = useState([]);
+const [selectedSteps, setSelectedSteps] = useState([]);
+const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+const [customCategoryName, setCustomCategoryName] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,18 +42,44 @@ const searchImages = async () => {
     setError('');
     setLoading(true);
     try {
-      const payload = {
-        ...form,
-        imageUrl,
-        targetDate: form.targetDate ? new Date(form.targetDate).toISOString() : null,
-      };
-      await api.post('/goals', payload);
-      navigate('/');
-    } catch (err) {
-      setError(err.response?.data?.message || "Erreur lors de la création de l'objectif");
-    } finally {
-      setLoading(false);
+     let categoryId = form.categoryId;
+ 
+if (categoryId === 'other') {
+  if (!customCategoryName.trim()) {
+    setError('Donne un nom à ta catégorie personnalisée.');
+    setLoading(false);
+    return;
+  }
+ 
+  const { data: category } = await api.post('/categories', {
+    name: customCategoryName.trim(),
+    color: '#6750A4',
+    icon: 'label',
+  });
+ 
+  categoryId = category.id;
+} 
+  const payload = {
+    ...form,
+    categoryId,
+    imageUrl,
+    targetDate: form.targetDate ? new Date(form.targetDate).toISOString() : null,
+  };
+  const { data: goal } = await api.post('/goals', payload);
+
+  for (const index of selectedSteps) {
+    const step = suggestedSteps[index];
+    if (step?.title) {
+      await api.post(`/goals/${goal.id}/steps`, { title: step.title });
     }
+  }
+
+  navigate('/');
+} catch (err) {
+  setError(err.response?.data?.message || "Erreur lors de la création de l'objectif");
+} finally {
+  setLoading(false);
+}
   };
 
   const iconMap = {
@@ -76,6 +108,25 @@ const searchImages = async () => {
     setError(err.response?.data?.message || "Erreur lors de l'upload de l'image");
   } finally {
     setUploading(false);
+  }
+};
+
+const handleSuggestSteps = async () => {
+  if (!form.title.trim()) {
+    setError('Renseigne d’abord le titre de l’objectif.');
+    return;
+  }
+  setLoadingSuggestions(true);
+  setError('');
+  try {
+    const categoryName = categories.find(c => c.id === form.categoryId)?.name || '';
+    const res = await suggestSteps(form.title, form.description, categoryName);
+    setSuggestedSteps(res.data.steps);
+    setSelectedSteps(res.data.steps.map((_, i) => i));
+  } catch (err) {
+    setError(err.response?.data?.message || 'Erreur lors de la suggestion d’étapes.');
+  } finally {
+    setLoadingSuggestions(false);
   }
 };
 
@@ -186,7 +237,47 @@ const searchImages = async () => {
                   </div>
                 </label>
               ))}
+
+              <label
+                className={`relative flex items-center justify-center h-20 rounded-xl cursor-pointer border-2 transition-all ${
+                  form.categoryId === 'other'
+                    ? 'border-primary-container bg-primary-container/5'
+                    : 'border-transparent bg-surface-container-lowest hover:bg-surface-container'
+                } shadow-soft`}
+              >
+                <input
+                  type="radio"
+                  name="category"
+                  value="other"
+                  className="sr-only"
+                  checked={form.categoryId === 'other'}
+                  onChange={() => setForm({ ...form, categoryId: 'other' })}
+                />
+                <div className="flex flex-col items-center gap-1">
+                  <span className="material-symbols-outlined text-primary-container">add</span>
+                  <span className="text-xs font-semibold text-on-surface">Autre</span>
+                </div>
+              </label>
             </div>
+
+            {form.categoryId === 'other' && (
+              <div className="mt-3">
+                <label className="block text-sm font-semibold text-outline mb-2">
+                  Nom de la catégorie
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex : Cuisine, Musique, Maison..."
+                  className="input-field"
+                  value={customCategoryName}
+                  onChange={(e) => setCustomCategoryName(e.target.value)}
+                  required
+                />
+                <p className="text-xs text-outline mt-2">
+                  Indique le thème qui correspond à cet objectif.
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -198,6 +289,45 @@ const searchImages = async () => {
               onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
             />
           </div>
+              <div>
+  <label className="block text-sm font-semibold text-outline mb-2">Étapes suggérées</label>
+  <p className="text-xs text-outline mb-2">
+    Groq peut te proposer des étapes basées sur ton objectif.
+  </p>
+  <button
+    type="button"
+    onClick={handleSuggestSteps}
+    disabled={loadingSuggestions}
+    className="w-full h-12 bg-surface-container text-primary-container font-semibold rounded-full mb-3 flex items-center justify-center gap-2"
+  >
+    <span className="material-symbols-outlined">auto_awesome</span>
+    {loadingSuggestions ? 'Chargement...' : 'Suggérer des étapes'}
+  </button>
+
+  {suggestedSteps.length > 0 && (
+    <div className="space-y-2">
+      <p className="text-xs text-outline">Sélectionne les étapes à conserver :</p>
+      {suggestedSteps.map((step, i) => (
+        <label key={i} className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl cursor-pointer">
+          <input
+            type="checkbox"
+            checked={selectedSteps.includes(i)}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setSelectedSteps([...selectedSteps, i]);
+              } else {
+                setSelectedSteps(selectedSteps.filter((idx) => idx !== i));
+              }
+            }}
+            className="w-5 h-5 accent-primary-container"
+          />
+          <span className="text-sm text-on-surface">{step.title}</span>
+        </label>
+      ))}
+    </div>
+  )}
+</div>
+          
 
           <button
             type="submit"

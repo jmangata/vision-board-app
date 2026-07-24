@@ -25,12 +25,18 @@ function GoalDetail() {
     fetchGoal();
   }, [id]);
 
-  const handleAddStep = async (e) => {
-    e.preventDefault();
-    await createStep(id, newStep);
-    setNewStep('');
-    fetchGoal();
-  };
+ const handleAddStep = async (e) => {
+  e.preventDefault();
+ 
+  const title = newStep.trim();
+  if (!title) return;
+ 
+  const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
+ 
+  await createStep(id, formattedTitle);
+  setNewStep('');
+  fetchGoal();
+};
 
   const handleToggle = async (stepId) => {
     await toggleStep(stepId);
@@ -54,7 +60,7 @@ function GoalDetail() {
         <Link to="/" className="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center text-primary">
           <span className="material-symbols-outlined">arrow_back</span>
         </Link>
-        <h1 className="text-lg font-semibold text-primary">Detail de l'objectif</h1>
+        <h1 className="text-lg font-semibold text-primary">Détail de l'objectif</h1>
         <button onClick={handleDelete} className="w-10 h-10 rounded-full hover:bg-surface-container-low flex items-center justify-center text-error">
           <span className="material-symbols-outlined">delete</span>
         </button>
@@ -102,7 +108,7 @@ function GoalDetail() {
         <section className="px-5 mt-6">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-semibold text-on-surface">Étapes</h3>
-            <span className="text-xs text-outline">{completed} of {total} terminé(2)</span>
+            <span className="text-xs text-outline">{completed} sur {total} étape(s) terminée(s)</span>
           </div>
     <p className="text-xs text-outline mb-3">
   Clique sur une étape pour la valider. Ajoute des étapes petites et actionnables.
@@ -136,7 +142,7 @@ function GoalDetail() {
                     {step.title}
                   </p>
                   <p className="text-xs text-outline-variant">
-                    {step.isCompleted ? `Completed on ${new Date(step.completedAt).toLocaleDateString()}` : 'In Progress'}
+                    {step.isCompleted ? `Terminée le ${new Date(step.completedAt).toLocaleDateString('fr-FR')}` : 'En cours'}
                   </p>
                 </div>
               </div>

@@ -3,8 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 function BottomNav() {
   const location = useLocation();
   const tabs = [
-    { path: '/', label: 'Board', icon: 'grid_view' },
-    { path: '/dashboard', label: 'Stats', icon: 'bar_chart' },
+    { path: '/', label: 'Objectifs', icon: 'grid_view' },
+    { path: '/dashboard', label: 'Statistiques', icon: 'bar_chart' },
     { path: '/badges', label: 'Badges', icon: 'emoji_events' },
     { path: '/profile', label: 'Profil', icon: 'person' },
   ];

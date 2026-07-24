@@ -1,53 +1,46 @@
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-export async function suggestSteps(title, description = '') {
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) {
-    throw new Error('GROQ_API_KEY is missing in environment variables');
+
+export async function suggestSteps(title, description = '', category = '') {
+  const GROQ_API_KEY = process.env.GROQ_API_KEY;
+  if (!GROQ_API_KEY) {
+    throw new Error('GROQ_API_KEY is missing');
   }
 
-  const prompt = `
-Tu es un assistant de productivité. Propose 3 à 5 étapes concrètes et actionnables pour atteindre cet objectif.
-Réponds UNIQUEMENT sous forme de tableau JSON de chaînes de caractères, sans texte autour.
+  const prompt = `Objectif : "${title}"${description ? ` - Description : ${description}` : ''}${category ? ` - Catégorie : ${category}` : ''}.
+Décompose cet objectif en 5 à 7 étapes concrètes, réalisables et progressives.
+Réponds UNIQUEMENT en JSON avec ce format exact :
+{
+  "steps": [
+    { "title": "Titre de l'étape 1" },
+    { "title": "Titre de l'étape 2" }
+  ]
+}`;
 
-Objectif : ${title}
-${description ? `Description : ${description}` : ''}
-
-Exemple de réponse attendue :
-["Étape 1", "Étape 2", "Étape 3"]
-`;
-
-  const res = await fetch(GROQ_API_URL, {
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: {
+      'Authorization': `Bearer ${GROQ_API_KEY}`,
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'llama3-8b-8192',
+      model: 'llama-3.3-70b-versatile',
       messages: [
-        { role: 'system', content: 'Tu réponds uniquement en JSON array de strings.' },
+        { role: 'system', content: 'Tu es un assistant qui aide à découper des objectifs personnels en étapes concrètes.' },
         { role: 'user', content: prompt },
       ],
+      response_format: { type: 'json_object' },
       temperature: 0.7,
-      max_tokens: 500,
     }),
   });
 
   if (!res.ok) {
     const error = await res.text();
-    console.error('Groq API error:', error);
-    throw new Error('Groq API request failed');
+    throw new Error(`Groq API error: ${error}`);
   }
 
   const data = await res.json();
-  const content = data.choices?.[0]?.message?.content || '';
+  const content = data.choices[0].message.content;
+  const parsed = JSON.parse(content);
 
-  // Nettoie la réponse pour extraire le JSON
-  const jsonMatch = content.match(/\[.*\]/s);
-  if (!jsonMatch) {
-    throw new Error('Invalid response format from Groq');
-  }
-
-  return JSON.parse(jsonMatch[0]);
+  return parsed.steps || [];
 }
