@@ -1,18 +1,18 @@
  import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { login } from '../services/authService';
+import { login as loginApi } from '../services/authService';
+import { useAuth } from '../context/AuthContext';
 
-export default function LoginScreen({ navigation }) {
+export default function LoginScreen() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const { login } = useAuth();
 
   const handleSubmit = async () => {
     setError('');
     try {
-      const { data } = await login(form);
-      await AsyncStorage.setItem('token', data.token);
-      navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+      const { data } = await loginApi(form);
+      await login(data.token);
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');
     }

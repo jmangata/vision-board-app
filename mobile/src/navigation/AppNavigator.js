@@ -1,9 +1,7 @@
  
-import { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import LoginScreen from '../screens/LoginScreen';
 import BoardScreen from '../screens/BoardScreen';
@@ -12,6 +10,7 @@ import BadgesScreen from '../screens/BadgesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GoalDetailScreen from '../screens/GoalDetailScreen';
 import CreateGoalScreen from '../screens/CreateGoalScreen';
+import { useAuth } from '../context/AuthContext';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -28,15 +27,7 @@ function MainTabs() {
 }
 
 export default function AppNavigator() {
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    AsyncStorage.getItem('token').then((t) => {
-      setToken(t);
-      setLoading(false);
-    });
-  }, []);
+  const { token, loading } = useAuth();
 
   if (loading) return null;
 
