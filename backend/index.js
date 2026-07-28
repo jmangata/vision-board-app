@@ -13,9 +13,11 @@ import unsplashRoutes from './src/routes/unsplashRoutes.js';
 import uploadRoutes from './src/routes/uploadRoutes.js';
 import suggestionRoutes from './src/routes/suggestionRoutes.js';
 import groqRoutes from './src/routes/groqRoutes.js';
+import { startReminderJob } from './src/jobs/reminderJob.js';
+
 
 dotenv.config();                 // Lit le fichier .env et injecte les variables dans process.env
-
+startReminderJob();
 const app = express();             // Crée l'application Express
 const PORT = process.env.PORT || 5000;  // Récupère le port depuis .env, sinon 5000 par défaut
 
