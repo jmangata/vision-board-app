@@ -34,7 +34,7 @@ function Login() {
           <div>
             <label className="block text-sm font-semibold text-on-surface-variant mb-1 ml-1">Email</label>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
+              <span className=" left-4 top-1/2 -translate-y-1/2 text-outline"></span>
               <input
                 type="email"
                 placeholder="name@example.com"
@@ -52,7 +52,7 @@ function Login() {
               <a href="#" className="text-sm text-primary-container">Oublié ?</a>
             </div>
             <div className="relative">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+              <span className=" absolute left-4 top-1/2 -translate-y-1/2 text-outline"></span>
               <input
                 type="password"
                 placeholder="••••••••"

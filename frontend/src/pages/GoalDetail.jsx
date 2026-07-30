@@ -66,15 +66,19 @@ function GoalDetail() {
         </button>
       </header>
 
-      <main className="mt-16">
-        <div className="relative w-full aspect-[16/10] overflow-hidden bg-surface-container">
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="material-symbols-outlined text-6xl text-outline-variant">landscape</span>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
+      <main className="mt-16 px-5">
+        <div className="relative w-full h-64 overflow-hidden bg-surface-container rounded-3xl shadow-lg">
+          {goal.imageUrl ? (
+            <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center">
+              <span className="material-symbols-outlined text-6xl text-outline-variant">landscape</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
 
-        <div className="px-5 -mt-12 relative z-10">
+        <div className="-mt-10 relative z-10">
           <div className="card p-5">
             <div className="flex justify-between items-start mb-2">
               <div>
