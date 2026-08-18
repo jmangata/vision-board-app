@@ -1,29 +1,28 @@
 {
-  "name": "backend",
+  "name": "vision-board-backend",
   "version": "1.0.0",
-  "description": "",
-  "main": "server.js",
+  "description": "Backend API for Vision Board App",
+  "type": "module",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "seed": "node prisma/seed.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^7.8.0",
-    "axios": "^1.18.1",
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "multer": "^2.2.0",
-    "node-cron": "^4.6.0",
-    "nodemailer": "^9.0.3"
+    "@prisma/client": "^5.16.0",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.14",
+    "prisma": "^5.16.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14",
-    "prisma": "^7.8.0"
+    "nodemon": "^3.1.4"
   }
 }
