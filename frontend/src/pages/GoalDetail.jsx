@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getGoal, deleteGoal, createStep, toggleStep } from '../services/goalService.js';
+import { getGoal, deleteGoal, createStep, toggleStep, updateGoal, uploadImage } from '../services/goalService.js';
+import api from '../services/api.js';
 
 const iconMap = {
   book: 'menu_book',
@@ -16,9 +17,56 @@ function GoalDetail() {
   const navigate = useNavigate();
   const [goal, setGoal] = useState(null);
   const [newStep, setNewStep] = useState('');
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [photos, setPhotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [imageError, setImageError] = useState('');
 
   const fetchGoal = () => {
     getGoal(id).then((res) => setGoal(res.data));
+  };
+
+  const applyImage = async (imageUrl) => {
+    setImageError('');
+    try {
+      const { data } = await updateGoal(id, { imageUrl });
+      setGoal((g) => ({ ...g, imageUrl: data.imageUrl }));
+      setShowImagePicker(false);
+      setPhotos([]);
+      setSearchQuery('');
+    } catch (err) {
+      setImageError(err.response?.data?.message || "Erreur lors de la mise à jour de l'image");
+    }
+  };
+
+  const searchImages = async () => {
+    if (!searchQuery.trim()) return;
+    try {
+      const res = await api.get(`/unsplash/search?query=${searchQuery}`);
+      setPhotos(res.data);
+    } catch (err) {
+      setImageError('Erreur lors de la recherche Unsplash');
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setImageError('Veuillez sélectionner une image.');
+      return;
+    }
+    setUploading(true);
+    setImageError('');
+    try {
+      const { data } = await uploadImage(file);
+      await applyImage(data.imageUrl);
+    } catch (err) {
+      setImageError(err.response?.data?.message || "Erreur lors de l'upload de l'image");
+    } finally {
+      setUploading(false);
+    }
   };
 
   useEffect(() => {
@@ -76,6 +124,14 @@ function GoalDetail() {
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+          <button
+            type="button"
+            onClick={() => setShowImagePicker((v) => !v)}
+            className="absolute top-3 right-3 flex items-center gap-2 bg-white/90 text-primary text-sm font-semibold px-4 py-2 rounded-full shadow-lg"
+          >
+            <span className="material-symbols-outlined text-base">edit</span>
+            Changer l'image
+          </button>
         </div>
 
         <div className="-mt-10 relative z-10">
@@ -108,6 +164,48 @@ function GoalDetail() {
             </div>
           </div>
         </div>
+
+        {showImagePicker && (
+          <div className="card p-4 mt-4">
+            {imageError && <p className="text-error text-sm font-medium mb-2">{imageError}</p>}
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="mb-3 text-sm text-outline file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-white hover:file:bg-primary-container/90"
+            />
+            {uploading && <p className="text-xs text-outline mb-2">Téléchargement en cours...</p>}
+
+            <div className="flex gap-2 mb-3">
+              <input
+                placeholder="Rechercher sur Unsplash..."
+                className="input-field flex-1"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchImages())}
+              />
+              <button type="button" onClick={searchImages} className="w-12 h-14 bg-primary-container text-white rounded-xl flex items-center justify-center">
+                <span className="material-symbols-outlined">search</span>
+              </button>
+            </div>
+
+            {photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {photos.map((photo) => (
+                  <button
+                    type="button"
+                    key={photo.id}
+                    onClick={() => applyImage(photo.url)}
+                    className="rounded-xl overflow-hidden border-2 border-transparent hover:border-primary-container transition-all"
+                  >
+                    <img src={photo.thumb} alt={photo.alt} className="w-full h-20 object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <section className="px-5 mt-6">
           <div className="flex justify-between items-center mb-3">

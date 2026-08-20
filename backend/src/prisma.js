@@ -1,6 +1,7 @@
 // Configuration singleton du client Prisma
 // Ce fichier est importé dans chaque controller pour accéder à la base de données
-import { PrismaClient } from '@prisma/client'; // Importe la classe PrismaClient
+import pkg from '@prisma/client'; // Importe le module CommonJS complet
+const { PrismaClient } = pkg; // Extrait la classe PrismaClient
 
 // Crée l'instance Prisma : si elle existe déjà en mémoire (globalThis), réutilise-la, sinon la crée
 export const prisma = globalThis.__prisma ?? new PrismaClient();
