@@ -4,6 +4,29 @@ import bcrypt from 'bcrypt';       // Importe bcrypt pour hacher les mots de pas
 import jwt from 'jsonwebtoken';   // Importe JWT pour générer des tokens d'authentification
 import { prisma } from '../prisma.js'; // Importe l'instance Prisma pour accéder à la base de données
 
+// Calcule le nombre de jours de streak à partir de la dernière connexion
+function computeStreakUpdate(lastLoginAt, currentStreakDays) {
+  const now = new Date();
+  if (!lastLoginAt) {
+    return { streakDays: Math.max(currentStreakDays || 1, 1), lastLoginAt: now };
+  }
+
+  const last = new Date(lastLoginAt);
+  const diffTime = now.getTime() - last.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    // Déjà connecté aujourd'hui, on ne change rien
+    return { streakDays: undefined, lastLoginAt: undefined };
+  }
+  if (diffDays === 1) {
+    // Connexion le lendemain, on incrémente
+    return { streakDays: (currentStreakDays || 1) + 1, lastLoginAt: now };
+  }
+  // Plus d'un jour d'écart, on réinitialise
+  return { streakDays: 1, lastLoginAt: now };
+}
+
 // === INSCRIPTION (Register) ===
 // Crée un nouvel utilisateur, hache le mot de passe et retourne un token JWT
 export const register = async (req, res) => {
@@ -26,7 +49,7 @@ export const register = async (req, res) => {
 
     // Crée l'utilisateur en base avec le mot de passe haché
     const user = await prisma.user.create({
-      data: { email, passwordHash, firstname },
+      data: { email, passwordHash, firstname, streakDays: 1, lastLoginAt: new Date() },
     });
 
     // Génère un token JWT contenant l'ID de l'utilisateur, signé avec le secret du .env
@@ -68,6 +91,18 @@ export const login = async (req, res) => {
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) {
       return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Met à jour le streak de connexion
+    const streakUpdate = computeStreakUpdate(user.lastLoginAt, user.streakDays);
+    if (streakUpdate.lastLoginAt || streakUpdate.streakDays !== undefined) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          ...(streakUpdate.lastLoginAt && { lastLoginAt: streakUpdate.lastLoginAt }),
+          ...(streakUpdate.streakDays !== undefined && { streakDays: streakUpdate.streakDays }),
+        },
+      });
     }
 
     // Génère un token JWT avec l'ID de l'utilisateur

@@ -79,16 +79,14 @@ export const toggle = async (req, res) => {
       },
     });
 
-    if (updated.isCompleted) {
-      const goalSteps = await prisma.step.findMany({ where: { goalId: step.goalId } });
-      const allCompleted = goalSteps.every((s) => s.isCompleted);
-      if (allCompleted) {
-        await prisma.goal.update({
-          where: { id: step.goalId },
-          data: { status: 'completed' },
-        });
-      }
-    }
+    const goalSteps = await prisma.step.findMany({ where: { goalId: step.goalId } });
+    const allCompleted = goalSteps.every((s) => s.isCompleted);
+    const newGoalStatus = allCompleted ? 'completed' : 'active';
+
+    await prisma.goal.update({
+      where: { id: step.goalId },
+      data: { status: newGoalStatus },
+    });
 
     const badgesEarned = await checkBadges(req.user.id);
     res.json({ ...updated, badgesEarned });

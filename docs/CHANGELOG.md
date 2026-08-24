@@ -1,5 +1,48 @@
 # Changelog — Fonctionnalités
 
+## Implémentation du badge de streak 7 jours (`streak_7`)
+
+### Contexte
+Le badge `streak_7` ("Inarrêtable") était documenté dans `docs/conception.md` et présent dans le seed, mais il n'était jamais attribué car la logique de streak n'existait pas.
+
+### Erreur constatée
+Aucun utilisateur ne pouvait débloquer le badge de streak 7 jours.
+
+### Cause
+- Le modèle `User` ne disposait pas de champs pour stocker la dernière date de connexion ni le nombre de jours de streak.
+- Le controller `authController.js` ne mettait pas à jour ces informations lors du login.
+- Le service `badgeService.js` ne vérifiait pas la condition `streak_7`.
+
+### Solution
+- Ajout des champs `lastLoginAt` (DateTime, nullable) et `streakDays` (Int, default 1) dans le modèle `User` de `prisma/schema.prisma`.
+- Création et application d'une migration Prisma `add_streak_fields`.
+- Ajout d'une fonction `computeStreakUpdate` dans `authController.js` :
+  - connexion le même jour → streak inchangé ;
+  - connexion le lendemain → streak incrémenté ;
+  - connexion après plus d'un jour → streak réinitialisé à 1.
+- Mise à jour de `lastLoginAt` à chaque connexion réussie.
+- Initialisation de `streakDays` à 1 et `lastLoginAt` à la date actuelle lors de l'inscription.
+- Ajout de la vérification `(user?.streakDays || 0) >= 7` dans `badgeService.checkBadges` pour attribuer `streak_7`.
+
+### Fichiers concernés
+- `backend/prisma/schema.prisma`
+- `backend/prisma/migrations/20260824162729_add_streak_fields/migration.sql` (généré)
+- `backend/src/controllers/authController.js`
+- `backend/src/services/badgeService.js`
+
+### Vérification
+1. Inscrire un nouvel utilisateur : `streakDays` doit être à 1 et `lastLoginAt` renseigné.
+2. Se connecter 7 jours consécutifs (en avançant manuellement `lastLoginAt` ou via des tests).
+3. Au 7ème jour, `checkBadges` doit retourner le badge `streak_7`.
+4. Sauter un jour doit réinitialiser le streak à 1.
+
+### Points de vigilance
+- Le calcul du streak est basé sur la différence en jours entre deux dates UTC.
+- Les utilisateurs existants sans `lastLoginAt` commenceront leur streak à leur prochaine connexion.
+- Le badge n'est attribué qu'une seule fois par utilisateur grâce à la contrainte unique sur `user_badges`.
+
+---
+
 ## Mise en place du CI GitHub Actions
 
 ### Contexte
