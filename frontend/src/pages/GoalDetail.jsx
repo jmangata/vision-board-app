@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getGoal, deleteGoal, createStep, toggleStep, updateGoal, uploadImage } from '../services/goalService.js';
+import { getGoal, deleteGoal, createStep, toggleStep, deleteStep, updateGoal, uploadImage } from '../services/goalService.js';
 import api from '../services/api.js';
 
 const iconMap = {
@@ -22,6 +22,7 @@ function GoalDetail() {
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState('');
+  const [stepError, setStepError] = useState('');
 
   const fetchGoal = () => {
     getGoal(id).then((res) => setGoal(res.data));
@@ -75,25 +76,52 @@ function GoalDetail() {
 
  const handleAddStep = async (e) => {
   e.preventDefault();
- 
+  setStepError('');
+
   const title = newStep.trim();
   if (!title) return;
- 
+
   const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
- 
-  await createStep(id, formattedTitle);
-  setNewStep('');
-  fetchGoal();
+
+  try {
+    await createStep(id, formattedTitle);
+    setNewStep('');
+    fetchGoal();
+  } catch (err) {
+    setStepError(err.response?.data?.message || 'Erreur lors de l\'ajout de l\'étape');
+  }
 };
 
   const handleToggle = async (stepId) => {
-    await toggleStep(stepId);
-    fetchGoal();
+    setStepError('');
+    try {
+      await toggleStep(stepId);
+      fetchGoal();
+    } catch (err) {
+      setStepError(err.response?.data?.message || 'Erreur lors du changement de statut');
+    }
+  };
+
+  const handleDeleteStep = async (stepId) => {
+    if (!window.confirm('Supprimer cette étape ?')) return;
+    setStepError('');
+    try {
+      await deleteStep(stepId);
+      fetchGoal();
+    } catch (err) {
+      setStepError(err.response?.data?.message || 'Erreur lors de la suppression');
+    }
   };
 
   const handleDelete = async () => {
-    await deleteGoal(id);
-    navigate('/');
+    if (!window.confirm('Supprimer cet objectif et toutes ses étapes ?')) return;
+    setStepError('');
+    try {
+      await deleteGoal(id);
+      navigate('/');
+    } catch (err) {
+      setStepError(err.response?.data?.message || 'Erreur lors de la suppression de l\'objectif');
+    }
   };
 
   if (!goal) return <p className="p-5">Chargement...</p>;
@@ -227,6 +255,8 @@ function GoalDetail() {
             </button>
           </form>
 
+          {stepError && <p className="text-error text-sm font-medium mb-3">{stepError}</p>}
+
           <div className="space-y-3">
             {goal.steps.map((step) => (
               <div
@@ -239,14 +269,23 @@ function GoalDetail() {
                 }`}>
                   {step.isCompleted && <span className="material-symbols-outlined text-sm">check</span>}
                 </div>
-                <div className="flex-1">
-                  <p className={`font-medium ${step.isCompleted ? 'text-outline line-through' : 'text-on-surface'}`}>
+                <div className="flex-1 min-w-0">
+                  <p className={`font-medium truncate ${step.isCompleted ? 'text-outline line-through' : 'text-on-surface'}`}>
                     {step.title}
                   </p>
                   <p className="text-xs text-outline-variant">
                     {step.isCompleted ? `Terminée le ${new Date(step.completedAt).toLocaleDateString('fr-FR')}` : 'En cours'}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={(e) => { e.stopPropagation(); handleDeleteStep(step.id); }}
+                  className="ml-3 w-9 h-9 rounded-full flex items-center justify-center text-outline hover:bg-error-container hover:text-error transition-colors"
+                  aria-label="Supprimer l'étape"
+                  title="Supprimer l'étape"
+                >
+                  <span className="material-symbols-outlined text-lg">delete</span>
+                </button>
               </div>
             ))}
           </div>

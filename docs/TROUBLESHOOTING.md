@@ -209,3 +209,152 @@ body: JSON.stringify({
 
 ### Point de vigilance
 Les fournisseurs d'IA (Groq, OpenAI, etc.) déprécient et retirent régulièrement des modèles. Si une intégration IA se met à échouer sans changement de code applicatif, toujours vérifier en premier la liste des modèles disponibles via l'API du fournisseur avant de chercher un bug côté code.
+
+---
+
+## Problèmes identifiés lors de l'analyse globale du code (2026-08-24)
+
+Les points ci-dessous n'ont pas encore été corrigés ; ils sont documentés ici pour être traités ultérieurement.
+
+### 8. `backend/src/middlewares/errorMiddleware.js` vide et non branché
+
+**Erreur** : Le middleware de gestion d'erreurs centralisée existe (`backend/src/middlewares/errorMiddleware.js`) mais est vide et n'est pas importé dans `backend/index.js`.
+
+**Cause** : Le fichier a été créé sans implémentation et son appel a été omis.
+
+**Impact** : Toutes les erreurs inattendues (erreurs Prisma non catchées, `TypeError`, etc.) ne sont pas capturées et peuvent faire planter le process ou fuir des stacks sensibles.
+
+**Solution préconisée** :
+- Remplir `errorMiddleware.js` avec un middleware Express à quatre arguments `(err, req, res, next)`.
+- Logger l'erreur côté serveur sans exposer de détails sensibles en production.
+- Importer et monter le middleware à la fin de `backend/index.js` après toutes les routes.
+
+---
+
+### 9. Le statut d'un objectif ne repasse pas à `active` quand une étape est décochée
+
+**Erreur** : Si toutes les étapes d'un objectif sont cochées, le statut passe à `completed`. En décochant ensuite une étape, le statut reste `completed`.
+
+**Cause** : Dans `backend/src/controllers/stepController.js` (`toggle`), la mise à jour du statut du `goal` n'est effectuée que dans le cas `if (updated.isCompleted)`.
+
+**Impact** : Données incohérentes : un objectif peut apparaître comme terminé alors qu'une de ses étapes ne l'est plus.
+
+**Solution préconisée** :
+- Après chaque toggle, recalculer si toutes les étapes sont terminées.
+- Si toutes sont terminées → `status: 'completed'`.
+- Sinon → `status: 'active'`.
+
+---
+
+### 10. Le badge `streak_7` n'est jamais attribué
+
+**Erreur** : Le badge de streak 7 jours (`streak_7`) est documenté dans `docs/conception.md` mais n'est pas vérifié dans `backend/src/services/badgeService.js`.
+
+**Cause** : La logique de streak n'a pas été implémentée ; le modèle `User` ne stocke pas non plus de date de dernière connexion ni de streak.
+
+**Impact** : Les utilisateurs ne peuvent jamais débloquer ce badge.
+
+**Solution préconisée** :
+- Ajouter les champs nécessaires au schéma Prisma (`lastLoginAt`, `streakDays`, etc.).
+- Mettre à jour ces champs lors du login.
+- Ajouter `awardBadge('streak_7')` dans `checkBadges` quand `streakDays >= 7`.
+
+---
+
+### 11. Routes dupliquées pour les suggestions Groq
+
+**Erreur** : Deux endpoints différents (`POST /api/groq/suggestions` et `POST /api/suggestions/steps`) appellent la même fonction `suggestSteps`.
+
+**Cause** : Un router a été laissé en place après la création de l'autre.
+
+**Impact** : Maintenance double et risque de divergence. Le frontend n'utilise qu'un seul endpoint (`/groq/suggestions`), l'autre est mort.
+
+**Solution préconisée** :
+- Supprimer `backend/src/routes/suggestionRoutes.js` et son montage dans `backend/index.js`.
+- Ou fusionner les deux routes et ne garder qu'un seul endpoint documenté.
+
+---
+
+### 12. Fichiers vides dans le projet mobile
+
+**Erreur** : De nombreux fichiers du dossier `mobile/` sont entièrement vides :
+- écrans : `BoardScreen.js`, `GoalDetailScreen.js`, `CreateGoalScreen.js`, `DashboardScreen.js`, `BadgesScreen.js`, `ProfileScreen.js`
+- composants : `GoalCard.js`, `BadgeCard.js`
+- services : `goalService.js`, `notificationService.js`
+
+**Cause** : Le projet mobile a été scaffoldé sans implémentation des écrans et services.
+
+**Impact** : L'application mobile ne compile pas / ne fonctionne pas (imports vides, routes sans composants).
+
+**Solution préconisée** :
+- Implémenter chaque écran et service en s'inspirant du frontend web.
+- Vérifier que `mobile/package.json` déclare bien `react` et `react-native` (actuellement absents).
+
+---
+
+### 13. Composant `BadgeCard.jsx` vide côté frontend web
+
+**Erreur** : `frontend/src/components/BadgeCard.jsx` est vide.
+
+**Cause** : Le composant a été créé mais jamais implémenté ; la page `Badges.jsx` gère l'affichage directement.
+
+**Impact** : Code mort / fichier inutile qui prête à confusion.
+
+**Solution préconisée** :
+- Soit supprimer le fichier s'il n'est pas utilisé, soit en extraire le rendu du badge depuis `Badges.jsx`.
+
+---
+
+### 14. Casse incohérente du point d'entrée React
+
+**Erreur** : Le fichier s'appelle `frontend/src/Main.jsx` (M majuscule) alors que `frontend/index.html` charge `/src/main.jsx` (m minuscule).
+
+**Cause** : Renommage partiel lors d'une correction précédente.
+
+**Impact** : Sur Windows le système de fichiers est insensible à la casse, donc le build fonctionne, mais cela peut casser sur Linux/macOS ou dans certains environnements CI.
+
+**Solution préconisée** :
+- Renommer `frontend/src/Main.jsx` en `frontend/src/main.jsx` (et ajuster l'import CSS si nécessaire).
+
+---
+
+### 15. Gestion d'erreur absente sur certaines actions frontend
+
+**Erreur** : Dans `frontend/src/pages/GoalDetail.jsx`, les fonctions `handleAddStep`, `handleToggle` et `handleDelete` ne gèrent pas les erreurs.
+
+**Cause** : Les appels API sont faits sans `try/catch`.
+
+**Impact** : En cas d'erreur réseau ou serveur, l'utilisateur ne reçoit aucun retour et l'état local peut rester figé.
+
+**Solution préconisée** :
+- Ajouter des blocs `try/catch` autour des appels API.
+- Afficher un message d'erreur à l'utilisateur et/ou dans la console.
+
+---
+
+### 16. Création de catégorie personnalisée non protégée contre les doublons
+
+**Erreur** : Dans `frontend/src/pages/CreateGoal.jsx`, lorsque l'utilisateur choisit "Autre" et saisit un nom, le frontend tente de créer une catégorie sans vérifier si le nom existe déjà.
+
+**Cause** : Le champ `name` de `Category` est marqué `@unique` dans Prisma ; une tentative de création avec un nom existant lève une erreur Prisma `P2002`.
+
+**Impact** : Erreur 500 côté backend si la catégorie existe déjà.
+
+**Solution préconisée** :
+- Vérifier l'existence du nom avant la création (`GET /api/categories`).
+- Ou gérer proprement l'erreur `P2002` côté backend avec un retour 409.
+
+---
+
+### 17. Dépendances au mauvais niveau dans `package.json` racine
+
+**Erreur** : Le `package.json` à la racine du monorepo contient des dépendances de production (`express`, `prisma`, `react-native-*`, etc.) qui devraient être dans `backend/package.json`, `frontend/package.json` ou `mobile/package.json`.
+
+**Cause** : Installation initiale sans séparer les workspaces.
+
+**Impact** : Installation confuse, risque de conflits de versions, et `node_modules` à la racine inutile.
+
+**Solution préconisée** :
+- Nettoyer le `package.json` racine pour ne garder que des scripts globaux éventuels.
+- Supprimer `node_modules` à la racine et réinstaller dans chaque sous-dossier.
+

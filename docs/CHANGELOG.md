@@ -1,5 +1,34 @@
 # Changelog — Fonctionnalités
 
+## Correction de la casse du point d'entrée React (`Main.jsx` → `main.jsx`)
+
+### Contexte
+Le fichier point d'entrée React s'appelait `frontend/src/Main.jsx` (M majuscule) alors que `frontend/index.html` chargeait `/src/main.jsx` (m minuscule).
+
+### Erreur constatée
+Sur Windows le système de fichiers est insensible à la casse, donc le build fonctionnait localement. Cependant, sur Linux/macOS ou dans un environnement CI, Vite ne trouverait pas le fichier et le build échouerait.
+
+### Cause
+Renommage partiel lors d'une correction antérieure.
+
+### Solution
+- Renommage de `frontend/src/Main.jsx` en `frontend/src/main.jsx` via `git mv` avec un nom temporaire (pour contourner l'insensibilité à la casse de Windows).
+- L'import CSS `../index.css` reste valide car le fichier reste dans `src/`.
+
+### Fichiers concernés
+- `frontend/src/Main.jsx` → `frontend/src/main.jsx` (renommé)
+
+### Vérification
+1. Lancer `npm run build` dans `frontend/`.
+2. Le build doit réussir sans erreur de fichier manquant.
+3. Le CI GitHub Actions doit passer sur le runner Ubuntu.
+
+### Points de vigilance
+- Vérifier que les imports relatifs dans `main.jsx` n'ont pas été cassés.
+- Si d'autres fichiers référencent `Main.jsx`, il faut les corriger ; ici seul `index.html` et Vite l'utilisent.
+
+---
+
 ## Implémentation du badge de streak 7 jours (`streak_7`)
 
 ### Contexte

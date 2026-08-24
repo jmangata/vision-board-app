@@ -1,13 +1,6 @@
- import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getAllBadges, getMyBadges } from '../services/badgeService.js';
-
-const iconMap = {
-  flag: 'flag',
-  trophy: 'emoji_events',
-  zap: 'bolt',
-  calendar: 'calendar_month',
-  compass: 'explore',
-};
+import BadgeCard from '../components/BadgeCard.jsx';
 
 function Badges() {
   const [allBadges, setAllBadges] = useState([]);
@@ -30,30 +23,9 @@ function Badges() {
     Atteins des objectifs et crée des habitudes pour débloquer de nouveaux badges.
   </p>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {allBadges.map((badge) => {
-          const earned = earnedIds.includes(badge.id);
-          return (
-            <div
-              key={badge.id}
-              className={`card p-5 flex flex-col items-center text-center transition-all ${
-                earned ? '' : 'opacity-40 grayscale'
-              }`}
-            >
-              <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
-                earned ? 'bg-primary-container shadow-progress' : 'bg-surface-container'
-              }`}>
-                <span className={`material-symbols-outlined text-2xl ${earned ? 'text-white' : 'text-outline'}`}>
-                  {iconMap[badge.icon] || 'star'}
-                </span>
-              </div>
-              <h3 className="font-semibold text-on-surface text-sm">{badge.name}</h3>
-              <p className="text-xs text-outline mt-1">{badge.description}</p>
-              {earned && (
-                <span className="mt-2 text-xs font-semibold text-secondary">Obtenu ✓</span>
-              )}
-            </div>
-          );
-        })}
+        {allBadges.map((badge) => (
+          <BadgeCard key={badge.id} badge={badge} earned={earnedIds.includes(badge.id)} />
+        ))}
       </div>
     </div>
   );

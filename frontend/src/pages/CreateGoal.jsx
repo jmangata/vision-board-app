@@ -45,19 +45,27 @@ const searchImages = async () => {
      let categoryId = form.categoryId;
  
 if (categoryId === 'other') {
-  if (!customCategoryName.trim()) {
+  const trimmedName = customCategoryName.trim();
+  if (!trimmedName) {
     setError('Donne un nom à ta catégorie personnalisée.');
     setLoading(false);
     return;
   }
- 
-  const { data: category } = await api.post('/categories', {
-    name: customCategoryName.trim(),
-    color: '#6750A4',
-    icon: 'label',
-  });
- 
-  categoryId = category.id;
+
+  const existingCategory = categories.find(
+    (c) => c.name.trim().toLowerCase() === trimmedName.toLowerCase()
+  );
+
+  if (existingCategory) {
+    categoryId = existingCategory.id;
+  } else {
+    const { data: category } = await api.post('/categories', {
+      name: trimmedName,
+      color: '#6750A4',
+      icon: 'label',
+    });
+    categoryId = category.id;
+  }
 } 
   const payload = {
     ...form,

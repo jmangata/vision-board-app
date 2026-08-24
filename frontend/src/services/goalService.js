@@ -6,7 +6,8 @@ export const createGoal = (data) => api.post('/goals', data);
 export const updateGoal = (id, data) => api.put(`/goals/${id}`, data);
 export const deleteGoal = (id) => api.delete(`/goals/${id}`);
 export const createStep = (goalId, title) => api.post(`/goals/${goalId}/steps`, { title });
-export const toggleStep = (id) => api.patch(`/steps/${id}/toggle`); 
+export const toggleStep = (id) => api.patch(`/steps/${id}/toggle`);
+export const deleteStep = (id) => api.delete(`/steps/${id}`); 
 export const uploadImage = (file) => {
   
   const formData = new FormData();
