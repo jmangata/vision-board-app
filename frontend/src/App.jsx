@@ -14,7 +14,9 @@ function App() {
   const hideNav = ['/login', '/register'].includes(location.pathname);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="app-shell min-h-screen bg-background pb-24">
+      <div className="app-shell__decor app-shell__decor--top" aria-hidden="true" />
+      <div className="app-shell__decor app-shell__decor--bottom" aria-hidden="true" />
       <Routes>
         <Route path="/" element={<Board />} />
         <Route path="/login" element={<Login />} />

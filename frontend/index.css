@@ -9,6 +9,75 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+.app-shell {
+  isolation: isolate;
+  overflow: hidden;
+  position: relative;
+}
+
+.app-shell::before,
+.app-shell::after {
+  content: '';
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.app-shell::before {
+  background:
+    radial-gradient(circle at 70% 24%, rgba(255, 255, 255, 0.9) 0 8%, transparent 28%),
+    radial-gradient(circle at 100% 12%, rgba(205, 224, 249, 0.78) 0 16%, transparent 37%);
+  height: 60vw;
+  max-height: 680px;
+  max-width: 680px;
+  right: -20vw;
+  top: -16vw;
+  width: 60vw;
+}
+
+.app-shell::after {
+  background:
+    radial-gradient(ellipse at 25% 76%, rgba(191, 216, 248, 0.6) 0 18%, transparent 48%),
+    radial-gradient(ellipse at 0% 100%, rgba(218, 230, 247, 0.92) 0 18%, transparent 46%);
+  bottom: -10vw;
+  height: 58vw;
+  left: -16vw;
+  max-height: 650px;
+  max-width: 650px;
+  width: 58vw;
+}
+
+.app-shell__decor {
+  border-radius: 999px;
+  filter: blur(1px);
+  pointer-events: none;
+  position: absolute;
+  z-index: 0;
+}
+
+.app-shell > *:not(.app-shell__decor) {
+  position: relative;
+  z-index: 1;
+}
+
+.app-shell__decor--top {
+  background: rgba(225, 239, 218, 0.72);
+  height: 130px;
+  right: -35px;
+  top: 38%;
+  transform: rotate(28deg);
+  width: 48px;
+}
+
+.app-shell__decor--bottom {
+  background: rgba(218, 235, 211, 0.78);
+  bottom: 4%;
+  height: 150px;
+  left: 7%;
+  transform: rotate(-30deg);
+  width: 42px;
+}
+
 input:focus, textarea:focus, select:focus {
   outline: none;
 }
