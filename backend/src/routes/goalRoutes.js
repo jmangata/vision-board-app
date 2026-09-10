@@ -1,3 +1,5 @@
+// Routes des objectifs (CRUD). Montées sur /api/goals dans index.js.
+// Toutes les routes exigent un token JWT valide (middleware authenticate).
  
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';

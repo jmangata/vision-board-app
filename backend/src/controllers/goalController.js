@@ -1,3 +1,8 @@
+// Controller des objectifs (goals) : CRUD complet.
+// Chaque requête est filtrée par req.user.id (injecté par le middleware
+// d'authentification) pour garantir qu'un utilisateur n'accède qu'à ses
+// propres objectifs. Après chaque création/modification, on vérifie si de
+// nouveaux badges ont été débloqués.
  import { prisma } from '../prisma.js';
 import { checkBadges } from '../services/badgeService.js';
 // GET /api/goals — Tous les objectifs de l'utilisateur connecté
@@ -9,7 +14,7 @@ export const getAll = async (req, res) => {
         category: true,
         steps: { orderBy: { order: 'asc' } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'desc' }, // Plus récents en premier
     });
     res.json(goals);
   } catch (err) {
@@ -54,6 +59,7 @@ export const create = async (req, res) => {
       },
       include: { category: true },
     });
+    // Vérifie les badges débloqués par cette action (ex. "premier objectif")
     const badgesEarned = await checkBadges(req.user.id);
     res.status(201).json({ ...goal, badgesEarned });
   } catch (err) {
@@ -79,6 +85,7 @@ export const update = async (req, res) => {
         title,
         description,
         imageUrl,
+        // undefined = champ non modifié ; null/Date = nouvelle valeur
         targetDate: targetDate ? new Date(targetDate) : undefined,
         categoryId,
         status,

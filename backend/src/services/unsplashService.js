@@ -1,3 +1,6 @@
+// Service d'intégration avec l'API Unsplash.
+// Permet de rechercher des images libres de droits pour illustrer
+// les objectifs du vision board (format paysage, adapté aux cartes).
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -25,6 +28,7 @@ export async function searchPhotos(query, perPage = 9) {
     throw new Error('Unexpected response from Unsplash API');
   }
 
+  // Normalise la réponse : on ne conserve que les champs utiles au frontend
   return data.results.map((photo) => ({
     id: photo.id,
     url: photo.urls.regular,

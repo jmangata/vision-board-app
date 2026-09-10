@@ -1,9 +1,13 @@
+// Barre de navigation supérieure (variante desktop historique ;
+// l'app utilise surtout BottomNav, voir App.jsx).
+// Affiche les liens selon que l'utilisateur est connecté ou non.
 import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar() {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
+  // Déconnexion : suppression du token puis rechargement complet
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');

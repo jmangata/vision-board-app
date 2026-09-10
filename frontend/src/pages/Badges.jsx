@@ -1,3 +1,5 @@
+// Page Badges : affiche tout le catalogue de badges ; ceux débloqués
+// par l'utilisateur connecté apparaissent en couleur, les autres grisés.
 import { useEffect, useState } from 'react';
 import { getAllBadges, getMyBadges } from '../services/badgeService.js';
 import BadgeCard from '../components/BadgeCard.jsx';
@@ -10,6 +12,8 @@ function Badges() {
     const token = localStorage.getItem('token');
     getAllBadges().then((res) => setAllBadges(res.data));
     if (token) {
+      // On ne garde que les IDs des badges obtenus pour un test
+      // d'appartenance rapide dans le rendu (earnedIds.includes)
       getMyBadges().then((res) => {
         setEarnedIds(res.data.map((ub) => ub.badgeId));
       });

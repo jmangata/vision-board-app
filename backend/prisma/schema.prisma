@@ -1,3 +1,9 @@
+// Schéma de la base de données PostgreSQL (Prisma ORM).
+// Convention : les champs camelCase côté JS sont mappés en snake_case
+// en base via @map, et chaque modèle est mappé sur une table via @@map.
+// Les suppressions sont en cascade : supprimer un User ou un Goal
+// supprime toutes ses données liées (steps, reminders, badges...).
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +13,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Utilisateur de l'application : identité, authentification et streak
+// de connexion (nombre de jours consécutifs d'activité).
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -15,6 +23,7 @@ model User {
   avatarUrl    String?   @map("avatar_url")
   createdAt    DateTime  @default(now()) @map("created_at")
   lastLoginAt  DateTime? @map("last_login_at")
+  // Streak : nombre de jours consécutifs de connexion (sert au badge streak_7)
   streakDays   Int       @default(1) @map("streak_days")
 
   goals     Goal[]
@@ -24,6 +33,7 @@ model User {
   @@map("users")
 }
 
+// Catégorie de classement des objectifs (référentiel commun, seedé au départ)
 model Category {
   id    String @id @default(uuid())
   name  String @unique
@@ -35,6 +45,8 @@ model Category {
   @@map("categories")
 }
 
+// Objectif utilisateur : l'entité centrale de l'application.
+// status peut valoir "active", "completed" ou "abandoned".
 model Goal {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
@@ -54,6 +66,8 @@ model Goal {
   @@map("goals")
 }
 
+// Étape (sous-tâche ordonnée) d'un objectif.
+// completedAt est renseigné uniquement quand isCompleted passe à true.
 model Step {
   id          String    @id @default(uuid())
   goalId      String    @map("goal_id")
@@ -67,6 +81,9 @@ model Step {
   @@map("steps")
 }
 
+// Rappel périodique par email lié à un objectif.
+// nextTriggerAt = prochaine échéance, recalculée par le job cron après envoi.
+// frequency peut valoir "daily", "weekly" ou "monthly".
 model Reminder {
   id            String   @id @default(uuid())
   goalId        String   @map("goal_id")
@@ -80,6 +97,9 @@ model Reminder {
   @@map("reminders")
 }
 
+// Badge du catalogue : récompense déblocable.
+// conditionKey est la clé technique évaluée dans services/badgeService.js
+// (ex. "first_goal", "five_completed", "streak_7", "explorer").
 model Badge {
   id           String @id @default(uuid())
   name         String @unique
@@ -92,6 +112,8 @@ model Badge {
   @@map("badges")
 }
 
+// Table de jointure : badge effectivement débloqué par un utilisateur.
+// La contrainte d'unicité (userId, badgeId) empêche les doublons.
 model UserBadge {
   id       String   @id @default(uuid())
   userId   String   @map("user_id")

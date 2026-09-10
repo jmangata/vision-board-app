@@ -1,3 +1,6 @@
+// Carte d'un objectif sur le board : image, catégorie, barre de
+// progression et liste dépliable des étapes (cochables directement).
+// onUpdate() (fourni par Board) recharge la liste après un toggle.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api.js';
@@ -5,6 +8,7 @@ import api from '../services/api.js';
 function GoalCard({ goal, onUpdate }) {
   const [expanded, setExpanded] = useState(false);
 
+  // Progression calculée côté client : étapes cochées / total
   const progress = goal.steps?.length
     ? Math.round((goal.steps.filter((s) => s.isCompleted).length / goal.steps.length) * 100)
     : 0;

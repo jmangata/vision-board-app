@@ -1,3 +1,6 @@
+// Navigation racine de l'app mobile : un Stack Navigator dont le contenu
+// dépend de l'état de connexion (useAuth). Non connecté -> écran Login
+// uniquement ; connecté -> onglets principaux + écrans de détail.
  
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,6 +18,7 @@ import { useAuth } from '../context/AuthContext';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Onglets principaux visibles une fois connecté
 function MainTabs() {
   return (
     <Tab.Navigator>
@@ -29,6 +33,7 @@ function MainTabs() {
 export default function AppNavigator() {
   const { token, loading } = useAuth();
 
+  // Pendant la restauration du token depuis AsyncStorage, on n'affiche rien
   if (loading) return null;
 
   return (

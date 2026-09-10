@@ -1,5 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+// Configuration Tailwind CSS : design system de l'application.
+// La palette de couleurs (primary, surface, error...) suit la convention
+// Material Design 3 et est utilisée via les classes utilitaires
+// (ex. bg-primary-container, text-on-surface).
 export default {
+  // Fichiers scannés par Tailwind pour générer uniquement le CSS utilisé
   content: [
     './index.html',
     './src/**/*.{js,ts,jsx,tsx}',

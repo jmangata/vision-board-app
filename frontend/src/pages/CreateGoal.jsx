@@ -1,3 +1,8 @@
+// Page de création d'un objectif. Outre le formulaire classique
+// (titre, description, catégorie, date), elle permet de :
+//  - choisir une image de couverture (upload Cloudinary ou recherche Unsplash)
+//  - créer une catégorie personnalisée à la volée (option "Autre")
+//  - générer des étapes suggérées par l'IA (Groq) et les cocher avant création
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api.js';
@@ -20,6 +25,7 @@ const [customCategoryName, setCustomCategoryName] = useState('');
 
   const navigate = useNavigate();
 
+  // Charge les catégories et présélectionne la première par défaut
   useEffect(() => {
     api.get('/categories').then((res) => {
       setCategories(res.data);
@@ -44,6 +50,8 @@ const searchImages = async () => {
     try {
      let categoryId = form.categoryId;
  
+// Catégorie "Autre" : réutilise une catégorie existante du même nom
+// si possible, sinon la crée avant de créer l'objectif
 if (categoryId === 'other') {
   const trimmedName = customCategoryName.trim();
   if (!trimmedName) {
@@ -75,6 +83,7 @@ if (categoryId === 'other') {
   };
   const { data: goal } = await api.post('/goals', payload);
 
+  // Crée ensuite chaque étape IA cochée (séquentiel pour préserver l'ordre)
   for (const index of selectedSteps) {
     const step = suggestedSteps[index];
     if (step?.title) {
@@ -90,6 +99,8 @@ if (categoryId === 'other') {
 }
   };
 
+  // Traduit les clés d'icônes stockées en base vers les noms
+  // d'icônes Material Symbols utilisés par l'UI
   const iconMap = {
     book: 'menu_book',
     briefcase: 'work',
@@ -119,6 +130,8 @@ if (categoryId === 'other') {
   }
 };
 
+// Appelle l'IA pour décomposer l'objectif en étapes ; toutes les
+// suggestions sont présélectionnées par défaut (l'utilisateur décoche)
 const handleSuggestSteps = async () => {
   if (!form.title.trim()) {
     setError('Renseigne d’abord le titre de l’objectif.');

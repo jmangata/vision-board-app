@@ -1,3 +1,6 @@
+// Controller du tableau de bord : agrège les statistiques de l'utilisateur
+// connecté (compteurs d'objectifs, taux de complétion, progression par
+// objectif actif et objectifs urgents approchant de leur date cible).
  import { prisma } from '../prisma.js';
 
 // GET /api/dashboard — Statistiques de l'utilisateur connecté
@@ -5,6 +8,7 @@ export const getStats = async (req, res) => {
   try {
     const userId = req.user.id;
 
+    // Toutes les requêtes sont lancées en parallèle pour limiter la latence
     const [totalGoals, activeGoals, completedGoals, abandonedGoals, totalBadges, goals] =
       await Promise.all([
         prisma.goal.count({ where: { userId } }),
@@ -23,6 +27,8 @@ export const getStats = async (req, res) => {
       ? Math.round((completedGoals / totalGoals) * 100)
       : 0;
 
+    // Calcule le pourcentage de progression de chaque objectif actif
+    // à partir du ratio étapes complétées / étapes totales
     const goalsWithProgress = goals.map((goal) => {
       const total = goal.steps.length;
       const done = goal.steps.filter((s) => s.isCompleted).length;
@@ -38,6 +44,7 @@ export const getStats = async (req, res) => {
       };
     });
 
+    // Objectifs "urgents" : date cible dans moins de 7 jours et non terminés
     const urgentGoals = goalsWithProgress.filter((g) => {
       if (!g.targetDate) return false;
       const daysLeft = Math.ceil((new Date(g.targetDate) - new Date()) / (1000 * 60 * 60 * 24));

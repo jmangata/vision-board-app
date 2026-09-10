@@ -1,3 +1,7 @@
+// Contexte d'authentification de l'app mobile.
+// Le token JWT est persisté dans AsyncStorage (équivalent mobile du
+// localStorage web) et restauré au démarrage ; il conditionne ensuite
+// la navigation (écran Login vs app complète) dans AppNavigator.
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -7,6 +11,8 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Au démarrage, restaure le token persisté ; loading reste true
+  // tant que la lecture n'est pas terminée (évite un flash du login)
   useEffect(() => {
     AsyncStorage.getItem('token').then((t) => {
       setToken(t);
@@ -31,6 +37,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// Hook d'accès : const { token, login, logout } = useAuth();
 export function useAuth() {
   return useContext(AuthContext);
 }

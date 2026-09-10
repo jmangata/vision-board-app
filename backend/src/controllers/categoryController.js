@@ -1,3 +1,6 @@
+// Controller des catégories : référentiel partagé (Santé, Carrière, ...)
+// utilisé pour classer les objectifs. Les catégories sont communes à tous
+// les utilisateurs, d'où l'absence de filtre userId.
 import { prisma } from '../prisma.js';
 
 // GET /api/categories — Liste toutes les catégories
@@ -39,6 +42,7 @@ export const create = async (req, res) => {
     });
     res.status(201).json(category);
   } catch (err) {
+    // P2002 = violation de contrainte unique (le nom de catégorie existe déjà)
     if (err.code === 'P2002') {
       return res.status(409).json({ message: 'Category name already exists' });
     }
@@ -56,6 +60,7 @@ export const update = async (req, res) => {
     });
     res.json(category);
   } catch (err) {
+    // P2025 = enregistrement introuvable (l'ID n'existe pas en base)
     if (err.code === 'P2025') {
       return res.status(404).json({ message: 'Category not found' });
     }

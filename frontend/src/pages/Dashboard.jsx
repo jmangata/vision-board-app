@@ -1,9 +1,12 @@
+// Page Tableau de bord : affiche les statistiques agrégées renvoyées
+// par GET /api/dashboard (compteurs d'objectifs, taux de complétion, badges).
 import { useEffect, useState } from 'react';
 import api from '../services/api.js';
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
 
+  // Chargement des statistiques au montage de la page (une seule fois)
   useEffect(() => {
     api.get('/dashboard').then((res) => setStats(res.data));
   }, []);

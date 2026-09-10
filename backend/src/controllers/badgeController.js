@@ -1,3 +1,6 @@
+// Controller des badges : liste le catalogue des badges disponibles et
+// ceux déjà débloqués par l'utilisateur connecté. L'attribution elle-même
+// est faite dans services/badgeService.js (checkBadges).
 import { prisma } from '../prisma.js';
 
 // GET /api/badges — Tous les badges disponibles

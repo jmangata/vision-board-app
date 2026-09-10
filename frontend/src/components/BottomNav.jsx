@@ -1,3 +1,6 @@
+// Barre de navigation inférieure fixe (navigation principale,
+// style application mobile). L'onglet actif est mis en surbrillance
+// et son icône passe en mode "rempli" (FILL 1).
 import { Link, useLocation } from 'react-router-dom';
 
 function BottomNav() {

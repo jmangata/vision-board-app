@@ -1,3 +1,7 @@
+// Script de test de bout en bout de l'API (à lancer avec le serveur démarré).
+// Parcourt le scénario complet : inscription -> login -> catégories ->
+// badges -> objectif -> étape -> dashboard -> rappel.
+// Usage : node test-api.js
 const BASE_URL = 'http://localhost:5000/api';
 
 const log = (msg, data = null) => {
@@ -5,6 +9,8 @@ const log = (msg, data = null) => {
   if (data) console.log(JSON.stringify(data, null, 2));
 };
 
+// Helper HTTP : enveloppe fetch avec gestion du token JWT, du JSON
+// et des erreurs (lève une exception si la réponse n'est pas 2xx)
 const request = async (url, method = 'GET', body = null, token = null) => {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -27,6 +33,7 @@ const request = async (url, method = 'GET', body = null, token = null) => {
 };
 
 async function run() {
+  // Email unique à chaque exécution pour éviter les conflits de contrainte unique
   const email = `test-${Date.now()}@test.com`;
   const password = '123456';
   const firstname = 'Test';

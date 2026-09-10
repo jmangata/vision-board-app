@@ -1,3 +1,6 @@
+// Script de seed : remplit la base avec les données de référence.
+// Utilise upsert partout pour être idempotent (relançable sans doublons).
+// À exécuter via : node prisma/seed.js (ou la commande définie dans package.json).
 import dotenv from 'dotenv';
 import pkg from '@prisma/client';
 const { PrismaClient } = pkg;
@@ -6,6 +9,7 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
+  // Catégories par défaut proposées pour classer les objectifs
   const categories = [
     { name: 'Santé', color: '#2E5797', icon: 'heart' },
     { name: 'Carrière', color: '#1D9E75', icon: 'briefcase' },
@@ -23,6 +27,8 @@ async function main() {
     });
   }
 
+  // Catalogue des badges ; conditionKey est la clé évaluée par
+  // services/badgeService.js lors de l'attribution
   const badges = [
     { name: 'Premier pas', icon: 'flag', description: 'Créer son premier objectif', conditionKey: 'first_goal' },
     { name: 'Objectif atteint', icon: 'trophy', description: 'Terminer son premier objectif', conditionKey: 'first_completed' },
@@ -42,6 +48,7 @@ async function main() {
   console.log('Seed terminé : catégories et badges créés.');
 }
 
+// Point d'entrée : ferme proprement la connexion Prisma à la fin
 main()
   .catch((e) => {
     console.error(e);

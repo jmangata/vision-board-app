@@ -1,3 +1,7 @@
+// Carte d'un badge : affiché en couleur si débloqué (earned),
+// grisé sinon. Utilisée par la page Badges.
+
+// Traduit les clés d'icônes stockées en base vers les noms Material Symbols
 const iconMap = {
   flag: 'flag',
   trophy: 'emoji_events',
@@ -6,6 +10,7 @@ const iconMap = {
   compass: 'explore',
 };
 
+// earned = l'utilisateur connecté possède déjà ce badge
 function BadgeCard({ badge, earned }) {
   return (
     <div

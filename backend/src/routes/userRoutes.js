@@ -1,3 +1,5 @@
+// Routes du profil utilisateur connecté.
+// Montées sur /api/users dans index.js. Authentification requise.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { getProfile, updateProfile } from '../controllers/userController.js';

@@ -1,3 +1,6 @@
+# Environnement de développement local : une base PostgreSQL 16.
+# Usage : docker compose up -d  (la base écoute sur le port 5433 de l'hôte,
+# donc DATABASE_URL doit pointer sur localhost:5433)
 version: "3.9"
 
 services:
@@ -9,8 +12,11 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: visionboard
+    # Le port hôte 5433 est utilisé pour éviter un conflit avec une
+    # éventuelle instance PostgreSQL locale déjà sur 5432
     ports:
       - "5433:5432"
+    # Volume nommé : les données survivent à la suppression du conteneur
     volumes:
       - pgdata:/var/lib/postgresql/data
 
