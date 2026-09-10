@@ -1,13 +1,17 @@
- import { useState } from 'react';
+// Écran de connexion : affiche le formulaire d'identification,
+// appelle le backend puis met à jour le contexte d'authentification.
+import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { login as loginApi } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen() {
+  // État local du formulaire et des éventuels messages d'erreur.
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const { login } = useAuth();
 
+  // Soumission : on réinitialise l'erreur, on appelle l'API puis on stocke le token.
   const handleSubmit = async () => {
     setError('');
     try {
@@ -18,6 +22,7 @@ export default function LoginScreen() {
     }
   };
 
+  // Interface simple : titre, champs email/mot de passe, message d'erreur et bouton de connexion.
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vision Board</Text>

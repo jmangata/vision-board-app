@@ -1,10 +1,14 @@
+// Script de test end-to-end local du backend Vision Board.
+// Il s'enregistre, se connecte, crée un objectif, une étape, vérifie le tableau de bord et un rappel.
 const BASE_URL = 'http://localhost:5000/api';
 
+// Affiche une section de test de manière lisible dans la console.
 const log = (msg, data = null) => {
   console.log(`\n=== ${msg} ===`);
   if (data) console.log(JSON.stringify(data, null, 2));
 };
 
+// Helper HTTP : ajoute le token Bearer si fourni et lève une erreur en cas de réponse non-OK.
 const request = async (url, method = 'GET', body = null, token = null) => {
   const headers = { 'Content-Type': 'application/json' };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -27,6 +31,7 @@ const request = async (url, method = 'GET', body = null, token = null) => {
 };
 
 async function run() {
+  // Email unique par exécution pour éviter les conflits d'unicité.
   const email = `test-${Date.now()}@test.com`;
   const password = '123456';
   const firstname = 'Test';

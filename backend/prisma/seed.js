@@ -1,3 +1,5 @@
+// Script de peuplement initial de la base de données.
+// Il crée les catégories par défaut et les badges déblocables si ceux-ci n'existent pas encore.
 import dotenv from 'dotenv';
 import pkg from '@prisma/client';
 const { PrismaClient } = pkg;
@@ -6,6 +8,7 @@ dotenv.config();
 const prisma = new PrismaClient();
 
 async function main() {
+  // Catégories proposées à l'utilisateur lors de la création d'objectifs.
   const categories = [
     { name: 'Santé', color: '#2E5797', icon: 'heart' },
     { name: 'Carrière', color: '#1D9E75', icon: 'briefcase' },
@@ -15,6 +18,7 @@ async function main() {
     { name: 'Relations', color: '#E74C3C', icon: 'users' },
   ];
 
+  // upsert : met à jour si la catégorie existe déjà, sinon la crée.
   for (const cat of categories) {
     await prisma.category.upsert({
       where: { name: cat.name },
@@ -23,6 +27,7 @@ async function main() {
     });
   }
 
+  // Badges disponibles dans le système de gamification.
   const badges = [
     { name: 'Premier pas', icon: 'flag', description: 'Créer son premier objectif', conditionKey: 'first_goal' },
     { name: 'Objectif atteint', icon: 'trophy', description: 'Terminer son premier objectif', conditionKey: 'first_completed' },

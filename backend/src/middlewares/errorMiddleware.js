@@ -1,3 +1,5 @@
+// Middleware de gestion centralisée des erreurs Express.
+// Transforme les erreurs connues (Prisma, JWT, validation) en réponses HTTP normalisées.
 import pkg from '@prisma/client';
 
 const { Prisma } = pkg;

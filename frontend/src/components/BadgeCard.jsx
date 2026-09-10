@@ -1,3 +1,7 @@
+// BadgeCard.jsx : affiche un badge avec son icône, son nom et sa description.
+// La carte est grisée et opacifiée si le badge n'a pas encore été gagné.
+
+// Correspondance entre les identifiants d'icônes internes et les noms Material Symbols.
 const iconMap = {
   flag: 'flag',
   trophy: 'emoji_events',

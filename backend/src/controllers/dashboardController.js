@@ -1,4 +1,5 @@
- import { prisma } from '../prisma.js';
+// Agrège les statistiques et indicateurs affichés sur le tableau de bord de l'utilisateur.
+import { prisma } from '../prisma.js';
 
 // GET /api/dashboard — Statistiques de l'utilisateur connecté
 export const getStats = async (req, res) => {

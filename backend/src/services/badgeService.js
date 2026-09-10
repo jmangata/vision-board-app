@@ -1,3 +1,5 @@
+// Service de gamification : détermine quels badges un utilisateur vient de débloquer
+// et les enregistre sans doublon grâce à la table de jointure UserBadge.
 import { prisma } from '../prisma.js';
 
 export async function checkBadges(userId) {
@@ -6,6 +8,7 @@ export async function checkBadges(userId) {
   const [totalGoals, completedGoals, categories, user] = await Promise.all([
     prisma.goal.count({ where: { userId } }),
     prisma.goal.count({ where: { userId, status: 'completed' } }),
+    // groupBy compte les catégories distinctes utilisées par l'utilisateur (badge Explorateur).
     prisma.goal.groupBy({
       by: ['categoryId'],
       where: { userId },
@@ -16,6 +19,7 @@ export async function checkBadges(userId) {
     }),
   ]);
 
+  // Vérifie si l'utilisateur possède déjà le badge correspondant à une condition.
   const hasBadge = async (conditionKey) => {
     const badge = await prisma.badge.findFirst({ where: { conditionKey } });
     if (!badge) return false;
@@ -25,6 +29,7 @@ export async function checkBadges(userId) {
     return !!existing;
   };
 
+  // Débloque un badge et l'ajoute à la liste des nouveaux badges gagnés.
   const awardBadge = async (conditionKey) => {
     if (await hasBadge(conditionKey)) return null;
     const badge = await prisma.badge.findFirst({ where: { conditionKey } });

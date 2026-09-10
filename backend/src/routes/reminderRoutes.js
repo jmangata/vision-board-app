@@ -1,3 +1,4 @@
+// Routes protégées de gestion des rappels associés aux objectifs.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { getAll, create, remove } from '../controllers/reminderController.js';

@@ -1,4 +1,6 @@
- import { prisma } from '../prisma.js';
+// Gestion des étapes d'un objectif. Le marquage d'une étape synchronise l'état (actif/terminé)
+// de l'objectif parent et déclenche une vérification des badges.
+import { prisma } from '../prisma.js';
 import { checkBadges } from '../services/badgeService.js';
 
 // POST /api/goals/:goalId/steps — Ajouter une étape à un objectif
@@ -80,6 +82,7 @@ export const toggle = async (req, res) => {
     });
 
     const goalSteps = await prisma.step.findMany({ where: { goalId: step.goalId } });
+    // Si toutes les étapes sont cochées, l'objectif passe automatiquement en "completed".
     const allCompleted = goalSteps.every((s) => s.isCompleted);
     const newGoalStatus = allCompleted ? 'completed' : 'active';
 

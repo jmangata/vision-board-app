@@ -1,3 +1,4 @@
+// Service de recherche d'images libres via l'API Unsplash.
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -25,6 +26,7 @@ export async function searchPhotos(query, perPage = 9) {
     throw new Error('Unexpected response from Unsplash API');
   }
 
+  // Normalise la réponse de l'API pour ne garder que les champs utiles au frontend.
   return data.results.map((photo) => ({
     id: photo.id,
     url: photo.urls.regular,

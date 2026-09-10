@@ -1,3 +1,4 @@
+// Controllers liés aux badges et à la collection de badges de l'utilisateur connecté.
 import { prisma } from '../prisma.js';
 
 // GET /api/badges — Tous les badges disponibles

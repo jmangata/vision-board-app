@@ -1,3 +1,4 @@
+// Lecture et mise à jour du profil utilisateur, y compris le changement de mot de passe.
 import { prisma } from '../prisma.js';
 import bcrypt from 'bcrypt';
 

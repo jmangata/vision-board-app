@@ -1,4 +1,5 @@
- import { Router } from 'express';
+ // Routes CRUD des catégories thématiques.
+import { Router } from 'express';
 import { getAll, getOne, create, update, remove } from '../controllers/categoryController.js';
 
 const router = Router();

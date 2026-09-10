@@ -1,3 +1,4 @@
+// Gestion des rappels périodiques associés aux objectifs de l'utilisateur connecté.
 import { prisma } from '../prisma.js';
 
 // GET /api/reminders — Rappels de l'utilisateur connecté

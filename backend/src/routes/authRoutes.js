@@ -1,4 +1,5 @@
  
+// Définition des routes d'authentification (register / login).
 // Définition des routes d'authentification (auth)
 import { Router } from 'express';                    // Importe le Router d'Express
 import { register, login } from '../controllers/authController.js'; // Importe les fonctions register et login du controller

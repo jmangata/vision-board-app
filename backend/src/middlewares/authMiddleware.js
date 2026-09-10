@@ -1,4 +1,4 @@
- 
+ // Middleware d'authentification : valide le token JWT Bearer et attache l'utilisateur à la requête.
 import jwt from 'jsonwebtoken';
 import { prisma } from '../prisma.js';
  

@@ -1,3 +1,6 @@
+// CreateGoal.jsx : formulaire de création d'un nouvel objectif.
+// Permet de renseigner le titre, la description, une date cible, une catégorie,
+// une image de couverture (upload ou recherche Unsplash) et des étapes suggérées par IA.
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api.js';
@@ -5,21 +8,30 @@ import { createGoal, uploadImage,suggestSteps } from '../services/goalService.js
 
 
 function CreateGoal() {
+  // Catégories disponibles pour le choix du thème.
   const [categories, setCategories] = useState([]);
+  // Valeurs du formulaire principal.
   const [form, setForm] = useState({ title: '', description: '', targetDate: '', categoryId: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Gestion de l'image de couverture.
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
-const [imageUrl, setImageUrl] = useState('');
-const [searchQuery, setSearchQuery] = useState('');
-const [suggestedSteps, setSuggestedSteps] = useState([]);
-const [selectedSteps, setSelectedSteps] = useState([]);
-const [loadingSuggestions, setLoadingSuggestions] = useState(false);
-const [customCategoryName, setCustomCategoryName] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Gestion des étapes suggérées par l'IA.
+  const [suggestedSteps, setSuggestedSteps] = useState([]);
+  const [selectedSteps, setSelectedSteps] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+  // Gestion de la catégorie personnalisée "Autre".
+  const [customCategoryName, setCustomCategoryName] = useState('');
 
   const navigate = useNavigate();
 
+  // Charge les catégories au montage et pré-sélectionne la première par défaut.
   useEffect(() => {
     api.get('/categories').then((res) => {
       setCategories(res.data);
@@ -27,6 +39,7 @@ const [customCategoryName, setCustomCategoryName] = useState('');
     });
   }, []);
 
+// Recherche des images libres de droits sur Unsplash à partir du terme saisi.
 const searchImages = async () => {
   if (!searchQuery.trim()) return;
   try {
@@ -37,13 +50,16 @@ const searchImages = async () => {
   }
 };
 
+  // Soumission du formulaire : gère la catégorie personnalisée, crée l'objectif,
+  // ajoute les étapes sélectionnées puis redirige vers l'accueil.
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
      let categoryId = form.categoryId;
- 
+
+// Création d'une nouvelle catégorie si l'utilisateur a choisi "Autre".
 if (categoryId === 'other') {
   const trimmedName = customCategoryName.trim();
   if (!trimmedName) {
@@ -53,9 +69,11 @@ if (categoryId === 'other') {
   }
 
   const existingCategory = categories.find(
+    // Normalise la comparaison pour éviter les doublons par casse ou espaces.
     (c) => c.name.trim().toLowerCase() === trimmedName.toLowerCase()
   );
 
+  // Réutilise une catégorie existante ou crée la nouvelle catégorie personnalisée.
   if (existingCategory) {
     categoryId = existingCategory.id;
   } else {
@@ -66,7 +84,9 @@ if (categoryId === 'other') {
     });
     categoryId = category.id;
   }
-} 
+}
+
+  // Prépare le payload final avec conversion de la date en format ISO si elle est renseignée.
   const payload = {
     ...form,
     categoryId,
@@ -75,6 +95,7 @@ if (categoryId === 'other') {
   };
   const { data: goal } = await api.post('/goals', payload);
 
+  // Crée chaque étape suggérée sélectionnée par l'utilisateur.
   for (const index of selectedSteps) {
     const step = suggestedSteps[index];
     if (step?.title) {
@@ -90,6 +111,7 @@ if (categoryId === 'other') {
 }
   };
 
+  // Correspondance entre les icônes de catégorie et les noms Material Symbols.
   const iconMap = {
     book: 'menu_book',
     briefcase: 'work',
@@ -98,6 +120,8 @@ if (categoryId === 'other') {
     heart: 'favorite',
     map: 'flight',
   };
+
+  // Upload d'une image depuis l'appareil de l'utilisateur.
   const handleFileUpload = async (e) => {
   const file = e.target.files[0];
   if (!file) return;
@@ -119,6 +143,7 @@ if (categoryId === 'other') {
   }
 };
 
+// Demande à l'IA (Groq) une liste d'étapes pertinentes pour l'objectif.
 const handleSuggestSteps = async () => {
   if (!form.title.trim()) {
     setError('Renseigne d’abord le titre de l’objectif.');

@@ -1,8 +1,11 @@
+// Job planifié d'envoi des rappels par email.
+// Toutes les 2 heures, il recherche les rappels échus, envoie un email et recalcule la prochaine échéance.
 import cron from 'node-cron';
 import { prisma } from '../prisma.js';
 import { sendReminderEmail } from '../services/emailService.js';
 
 
+// Calcule la prochaine date de déclenchement à partir de la date actuelle ou de l'échéance précédente.
 function computeNextTriggerAt(frequency, from = new Date()) {
   const next = new Date(from);
   if (frequency === 'daily') next.setDate(next.getDate() + 1);

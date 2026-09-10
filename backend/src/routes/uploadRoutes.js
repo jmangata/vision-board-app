@@ -1,3 +1,4 @@
+// Route protégée d'upload d'image vers Cloudinary.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { upload, uploadToCloudinary } from '../services/uploadService.js';

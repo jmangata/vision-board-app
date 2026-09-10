@@ -1,3 +1,4 @@
+// Route protégée de recherche d'images auprès de l'API Unsplash.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { searchPhotos } from '../services/unsplashService.js';

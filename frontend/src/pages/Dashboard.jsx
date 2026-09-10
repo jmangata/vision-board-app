@@ -1,9 +1,12 @@
+// Dashboard.jsx : page de tableau de bord affichant des statistiques globales
+// sur les objectifs, leur complétion et les badges de l'utilisateur.
 import { useEffect, useState } from 'react';
 import api from '../services/api.js';
 
 function Dashboard() {
   const [stats, setStats] = useState(null);
 
+  // Récupère les statistiques agrégées auprès du backend au montage.
   useEffect(() => {
     api.get('/dashboard').then((res) => setStats(res.data));
   }, []);

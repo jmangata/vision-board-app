@@ -1,4 +1,5 @@
- import { Router } from 'express';
+ // Route protégée du tableau de bord, aggregant les statistiques de l'utilisateur.
+import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { getStats } from '../controllers/dashboardController.js';
 

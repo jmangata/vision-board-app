@@ -1,3 +1,4 @@
+// Routes protégées de gestion des étapes des objectifs.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { create, update, toggle, remove } from '../controllers/stepController.js';

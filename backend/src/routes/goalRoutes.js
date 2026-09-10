@@ -1,4 +1,4 @@
- 
+ // Routes protégées de gestion des objectifs.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { getAll, getOne, create, update, remove } from '../controllers/goalController.js';

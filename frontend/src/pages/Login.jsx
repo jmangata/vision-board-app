@@ -1,3 +1,5 @@
+// Login.jsx : page de connexion.
+// Elle envoie les identifiants au backend, stocke le JWT reçu puis recharge l'application.
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/authService.js';
@@ -7,6 +9,7 @@ function Login() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Authentifie l'utilisateur et persiste le token dans le localStorage.
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

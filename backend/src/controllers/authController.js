@@ -1,5 +1,7 @@
  
-// Controllers pour l'authentification (inscription et connexion)
+// Controllers pour l'authentification (inscription et connexion).
+// Gère l'enregistrement, la connexion, le hachage des mots de passe,
+// la génération de JWT et la mise à jour du streak de connexion.
 import bcrypt from 'bcrypt';       // Importe bcrypt pour hacher les mots de passe
 import jwt from 'jsonwebtoken';   // Importe JWT pour générer des tokens d'authentification
 import { prisma } from '../prisma.js'; // Importe l'instance Prisma pour accéder à la base de données

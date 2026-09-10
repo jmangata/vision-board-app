@@ -1,3 +1,7 @@
+// Schéma Prisma de Vision Board.
+// Ce fichier définit le modèle de données relationnel : utilisateurs, objectifs, étapes,
+// catégories, rappels et badges. Chaque modèle est mappé explicitement vers une table PostgreSQL.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +11,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Utilisateur de l'application. La suppression d'un utilisateur cascade sur ses objectifs et badges.
 model User {
   id           String    @id @default(uuid())
   email        String    @unique
@@ -24,6 +29,7 @@ model User {
   @@map("users")
 }
 
+// Catégorie thématique des objectifs (Santé, Carrière, etc.).
 model Category {
   id    String @id @default(uuid())
   name  String @unique
@@ -35,6 +41,7 @@ model Category {
   @@map("categories")
 }
 
+// Objectif créé par un utilisateur, rattaché à une catégorie et découpé en étapes.
 model Goal {
   id          String    @id @default(uuid())
   userId      String    @map("user_id")
@@ -54,6 +61,7 @@ model Goal {
   @@map("goals")
 }
 
+// Étape concrète d'un objectif. L'ordre permet d'afficher les étapes dans une séquence logique.
 model Step {
   id          String    @id @default(uuid())
   goalId      String    @map("goal_id")
@@ -67,6 +75,7 @@ model Step {
   @@map("steps")
 }
 
+// Rappel périodique associé à un objectif et à un utilisateur.
 model Reminder {
   id            String   @id @default(uuid())
   goalId        String   @map("goal_id")
@@ -80,6 +89,7 @@ model Reminder {
   @@map("reminders")
 }
 
+// Badge déblocable par un utilisateur selon une condition métier (conditionKey).
 model Badge {
   id           String @id @default(uuid())
   name         String @unique
@@ -92,6 +102,7 @@ model Badge {
   @@map("badges")
 }
 
+// Table de jointure garantissant qu'un utilisateur ne gagne qu'une fois chaque badge.
 model UserBadge {
   id       String   @id @default(uuid())
   userId   String   @map("user_id")

@@ -1,3 +1,6 @@
+// App.jsx : composant racine de l'application.
+// Il centralise la déclaration des routes et conditionne l'affichage de la barre
+// de navigation inférieure pour ne pas la montrer sur les pages de connexion.
 import { Routes, Route, useLocation } from 'react-router-dom';
 import BottomNav from './components/BottomNav.jsx';
 import Login from './pages/Login.jsx';
@@ -11,6 +14,7 @@ import Badges from './pages/Badges.jsx';
 
 function App() {
   const location = useLocation();
+  // On masque la barre de navigation sur les écrans d'authentification.
   const hideNav = ['/login', '/register'].includes(location.pathname);
 
   return (

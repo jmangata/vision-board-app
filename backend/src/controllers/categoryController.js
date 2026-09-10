@@ -1,3 +1,4 @@
+// CRUD des catégories thématiques utilisées pour classer les objectifs.
 import { prisma } from '../prisma.js';
 
 // GET /api/categories — Liste toutes les catégories

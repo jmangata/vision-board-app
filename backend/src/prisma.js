@@ -1,3 +1,4 @@
+// Fournit l'unique instance PrismaClient utilisée par toute l'application backend.
 // Configuration singleton du client Prisma
 // Ce fichier est importé dans chaque controller pour accéder à la base de données
 import pkg from '@prisma/client'; // Importe le module CommonJS complet

@@ -1,9 +1,13 @@
+// Navbar.jsx : barre de navigation supérieure (alternative au BottomNav).
+// Affiche les liens de connexion ou les liens d'application selon la présence du token.
 import { Link, useNavigate } from 'react-router-dom';
 
 function Navbar() {
+  // Lecture directe du JWT pour déterminer si l'utilisateur est connecté.
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
+  // Supprime le token et force le rafraîchissement pour réinitialiser l'état global.
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');

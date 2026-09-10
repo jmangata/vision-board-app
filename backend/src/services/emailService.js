@@ -1,4 +1,5 @@
- import nodemailer from 'nodemailer';
+ // Service d'envoi d'emails via SMTP configuré dans les variables d'environnement.
+import nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();

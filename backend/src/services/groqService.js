@@ -1,4 +1,5 @@
-
+// Service d'appel à l'API Groq pour obtenir un découpage d'objectif en étapes concrètes.
+// Le prompt contraint le modèle à répondre dans un format JSON attendu par le frontend.
 
 export async function suggestSteps(title, description = '', category = '') {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;

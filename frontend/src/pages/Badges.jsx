@@ -1,11 +1,15 @@
+// Badges.jsx : page listant tous les badges disponibles.
+// Elle distingue visuellement les badges obtenus par l'utilisateur connecté.
 import { useEffect, useState } from 'react';
 import { getAllBadges, getMyBadges } from '../services/badgeService.js';
 import BadgeCard from '../components/BadgeCard.jsx';
 
 function Badges() {
   const [allBadges, setAllBadges] = useState([]);
+  // Identifiants des badges déjà gagnés par l'utilisateur courant.
   const [earnedIds, setEarnedIds] = useState([]);
 
+  // Chargement initial : récupère tous les badges puis ceux de l'utilisateur (si authentifié).
   useEffect(() => {
     const token = localStorage.getItem('token');
     getAllBadges().then((res) => setAllBadges(res.data));

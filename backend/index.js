@@ -1,3 +1,6 @@
+// Point d'entrée du serveur Express.
+// Ce fichier orchestre l'application : chargement des variables d'environnement,
+// montage des routes, gestion centralisée des erreurs et démarrage du serveur.
 import express from 'express';    // Charge la librairie Express pour créer le serveur web
 import cors from 'cors';          // Charge CORS pour autoriser les requêtes du frontend (React/Vite)
 import dotenv from 'dotenv';      // Charge dotenv pour lire les variables du fichier .env

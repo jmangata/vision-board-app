@@ -1,3 +1,4 @@
+// Route protégée de suggestion d'étapes par IA (alias de Groq).
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { suggestSteps } from '../services/groqService.js';

@@ -1,3 +1,4 @@
+// Routes protégées du profil utilisateur.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { getProfile, updateProfile } from '../controllers/userController.js';

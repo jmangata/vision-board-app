@@ -1,8 +1,12 @@
+// GoalDetail.jsx : page de détail d'un objectif.
+// Elle permet de consulter l'objectif, changer son image, ajouter/modifier/supprimer des étapes
+// et supprimer l'objectif complet.
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getGoal, deleteGoal, createStep, toggleStep, deleteStep, updateGoal, uploadImage } from '../services/goalService.js';
 import api from '../services/api.js';
 
+// Correspondance entre les icônes de catégorie et les noms Material Symbols.
 const iconMap = {
   book: 'menu_book',
   briefcase: 'work',
@@ -13,8 +17,11 @@ const iconMap = {
 };
 
 function GoalDetail() {
+  // Identifiant de l'objectif récupéré depuis l'URL.
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // Données de l'objectif et état local des formulaires.
   const [goal, setGoal] = useState(null);
   const [newStep, setNewStep] = useState('');
   const [showImagePicker, setShowImagePicker] = useState(false);
@@ -24,10 +31,12 @@ function GoalDetail() {
   const [imageError, setImageError] = useState('');
   const [stepError, setStepError] = useState('');
 
+  // Récupère les informations détaillées de l'objectif depuis l'API.
   const fetchGoal = () => {
     getGoal(id).then((res) => setGoal(res.data));
   };
 
+  // Applique une nouvelle URL d'image à l'objectif.
   const applyImage = async (imageUrl) => {
     setImageError('');
     try {
@@ -41,6 +50,7 @@ function GoalDetail() {
     }
   };
 
+  // Recherche d'images libres de droits sur Unsplash.
   const searchImages = async () => {
     if (!searchQuery.trim()) return;
     try {
@@ -51,6 +61,7 @@ function GoalDetail() {
     }
   };
 
+  // Upload d'une image depuis l'appareil puis application sur l'objectif.
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -70,10 +81,12 @@ function GoalDetail() {
     }
   };
 
+  // Recharge l'objectif lors du montage ou si l'identifiant dans l'URL change.
   useEffect(() => {
     fetchGoal();
   }, [id]);
 
+ // Ajoute une nouvelle étape à l'objectif après avoir normalisé la première lettre.
  const handleAddStep = async (e) => {
   e.preventDefault();
   setStepError('');
@@ -92,6 +105,7 @@ function GoalDetail() {
   }
 };
 
+  // Inverse le statut terminé/en cours d'une étape et rafraîchit l'objectif.
   const handleToggle = async (stepId) => {
     setStepError('');
     try {
@@ -102,6 +116,7 @@ function GoalDetail() {
     }
   };
 
+  // Supprime une étape après confirmation.
   const handleDeleteStep = async (stepId) => {
     if (!window.confirm('Supprimer cette étape ?')) return;
     setStepError('');
@@ -113,6 +128,7 @@ function GoalDetail() {
     }
   };
 
+  // Supprime l'objectif complet après confirmation, puis retourne à l'accueil.
   const handleDelete = async () => {
     if (!window.confirm('Supprimer cet objectif et toutes ses étapes ?')) return;
     setStepError('');
@@ -126,6 +142,7 @@ function GoalDetail() {
 
   if (!goal) return <p className="p-5">Chargement...</p>;
 
+  // Calcule le taux de complétion à partir des étapes validées.
   const completed = goal.steps.filter((s) => s.isCompleted).length;
   const total = goal.steps.length;
   const progress = total ? Math.round((completed / total) * 100) : 0;

@@ -1,4 +1,6 @@
- import { useEffect, useState } from 'react';
+// Profile.jsx : page de profil utilisateur.
+// Affiche les informations du compte connecté et permet de modifier son prénom, email et mot de passe.
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
 
@@ -10,6 +12,7 @@ function Profile() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Redirige vers la connexion si aucun token n'est présent, sinon charge le profil.
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/login'); return; }
@@ -19,12 +22,14 @@ function Profile() {
     });
   }, [navigate]);
 
+  // Envoie les modifications du profil, mot de passe inclus uniquement s'il est renseigné.
   const handleSave = async (e) => {
     e.preventDefault();
     setError('');
     setMessage('');
     try {
       const payload = { firstname: form.firstname, email: form.email };
+      // Inclut les champs de mot de passe seulement si un nouveau mot de passe est demandé.
       if (form.newPassword) {
         payload.currentPassword = form.currentPassword;
         payload.newPassword = form.newPassword;
@@ -40,6 +45,7 @@ function Profile() {
     }
   };
 
+  // Déconnecte l'utilisateur en supprimant le token et en rechargeant l'application.
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');
@@ -48,6 +54,7 @@ function Profile() {
 
   if (!user) return <p className="p-5">Chargement...</p>;
 
+  // Formate la date d'inscription en français pour l'affichage.
   const memberSince = new Date(user.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (

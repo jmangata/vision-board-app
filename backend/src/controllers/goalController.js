@@ -1,5 +1,8 @@
- import { prisma } from '../prisma.js';
+// CRUD des objectifs. Après création ou modification, on réévalue les badges déblocables
+// afin de notifier le frontend si l'utilisateur vient d'en gagner un.
+import { prisma } from '../prisma.js';
 import { checkBadges } from '../services/badgeService.js';
+
 // GET /api/goals — Tous les objectifs de l'utilisateur connecté
 export const getAll = async (req, res) => {
   try {
