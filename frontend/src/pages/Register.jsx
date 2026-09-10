@@ -1,3 +1,5 @@
+// Page d'inscription : crée le compte, stocke le token JWT retourné
+// puis redirige directement vers le board (connexion automatique).
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { register } from '../services/authService.js';
@@ -11,6 +13,7 @@ function Register() {
     e.preventDefault();
     try {
       const { data } = await register(form);
+      // Connexion automatique : le token est stocké comme après un login
       localStorage.setItem('token', data.token);
       navigate('/');
       window.location.reload();

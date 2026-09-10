@@ -1,3 +1,6 @@
+// Page de détail d'un objectif : progression, gestion des étapes
+// (ajout, coche, suppression), changement d'image de couverture
+// (upload ou Unsplash) et suppression de l'objectif.
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getGoal, deleteGoal, createStep, toggleStep, deleteStep, updateGoal, uploadImage } from '../services/goalService.js';
@@ -24,10 +27,14 @@ function GoalDetail() {
   const [imageError, setImageError] = useState('');
   const [stepError, setStepError] = useState('');
 
+  // Recharge l'objectif complet après chaque modification
+  // (les steps sont inclus dans la réponse du backend)
   const fetchGoal = () => {
     getGoal(id).then((res) => setGoal(res.data));
   };
 
+  // Applique une nouvelle image de couverture (upload ou Unsplash)
+  // puis referme le sélecteur d'image
   const applyImage = async (imageUrl) => {
     setImageError('');
     try {
@@ -81,6 +88,7 @@ function GoalDetail() {
   const title = newStep.trim();
   if (!title) return;
 
+  // Met une majuscule au premier caractère pour une présentation homogène
   const formattedTitle = title.charAt(0).toUpperCase() + title.slice(1);
 
   try {
@@ -126,6 +134,7 @@ function GoalDetail() {
 
   if (!goal) return <p className="p-5">Chargement...</p>;
 
+  // Progression = pourcentage d'étapes terminées
   const completed = goal.steps.filter((s) => s.isCompleted).length;
   const total = goal.steps.length;
   const progress = total ? Math.round((completed / total) * 100) : 0;

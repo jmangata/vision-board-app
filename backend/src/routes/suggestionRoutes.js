@@ -1,3 +1,6 @@
+// Route de suggestions d'étapes via l'IA (Groq).
+// Variante de groqRoutes.js montée sur /api/suggestions : même service,
+// payload sans le champ "category". Authentification requise.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { suggestSteps } from '../services/groqService.js';

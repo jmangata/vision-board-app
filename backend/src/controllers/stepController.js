@@ -1,3 +1,5 @@
+// Controller des étapes (steps) : sous-tâches ordonnées d'un objectif.
+// L'appartenance à l'utilisateur est vérifiée via la relation step -> goal -> userId.
  import { prisma } from '../prisma.js';
 import { checkBadges } from '../services/badgeService.js';
 
@@ -18,6 +20,7 @@ export const create = async (req, res) => {
       return res.status(404).json({ message: 'Goal not found' });
     }
 
+    // La nouvelle étape est ajoutée en fin de liste : order = nombre d'étapes + 1
     const count = await prisma.step.count({ where: { goalId } });
 
     const step = await prisma.step.create({
@@ -75,10 +78,12 @@ export const toggle = async (req, res) => {
       where: { id: req.params.id },
       data: {
         isCompleted: !step.isCompleted,
+        // Date de complétion renseignée quand on coche, effacée quand on décoche
         completedAt: !step.isCompleted ? new Date() : null,
       },
     });
 
+    // Si toutes les étapes sont cochées, l'objectif passe automatiquement à "completed"
     const goalSteps = await prisma.step.findMany({ where: { goalId: step.goalId } });
     const allCompleted = goalSteps.every((s) => s.isCompleted);
     const newGoalStatus = allCompleted ? 'completed' : 'active';

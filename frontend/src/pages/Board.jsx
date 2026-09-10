@@ -1,3 +1,5 @@
+// Page d'accueil (vision board) : liste les objectifs de l'utilisateur
+// sous forme de cartes. Sans token, propose de se connecter.
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getGoals } from '../services/goalService.js';
@@ -8,6 +10,8 @@ function Board() {
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
 
+  // Recharge la liste des objectifs ; passée à GoalCard (onUpdate)
+  // pour rafraîchir l'affichage après chaque action sur une étape
   const fetchGoals = () => {
     if (!token) return;
     getGoals().then((res) => setGoals(res.data));
@@ -17,6 +21,7 @@ function Board() {
     fetchGoals();
   }, [token]);
 
+  // Utilisateur non connecté : écran d'invitation à la connexion
   if (!token) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-5">

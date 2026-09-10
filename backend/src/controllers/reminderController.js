@@ -1,3 +1,6 @@
+// Controller des rappels : notifications email périodiques liées à un objectif.
+// L'envoi effectif est assuré par le job cron dans jobs/reminderJob.js ;
+// ce controller ne fait que gérer la programmation (création/suppression).
 import { prisma } from '../prisma.js';
 
 // GET /api/reminders — Rappels de l'utilisateur connecté
@@ -30,6 +33,7 @@ export const create = async (req, res) => {
       return res.status(404).json({ message: 'Goal not found' });
     }
 
+    // Première échéance calculée à partir de maintenant selon la fréquence
     const nextTriggerAt = new Date();
     if (frequency === 'daily') nextTriggerAt.setDate(nextTriggerAt.getDate() + 1);
     else if (frequency === 'weekly') nextTriggerAt.setDate(nextTriggerAt.getDate() + 7);

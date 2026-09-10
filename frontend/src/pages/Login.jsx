@@ -1,3 +1,5 @@
+// Page de connexion : authentifie l'utilisateur via l'API, stocke le
+// token JWT en localStorage puis redirige vers le board des objectifs.
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { login } from '../services/authService.js';
@@ -11,8 +13,11 @@ function Login() {
     e.preventDefault();
     try {
       const { data } = await login(form);
+      // Le token est conservé en localStorage : l'intercepteur Axios
+      // (services/api.js) le joint automatiquement aux requêtes suivantes
       localStorage.setItem('token', data.token);
       navigate('/');
+      // Rechargement complet pour réinitialiser l'état global de l'app
       window.location.reload();
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');

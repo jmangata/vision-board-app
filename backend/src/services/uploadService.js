@@ -1,3 +1,6 @@
+// Service d'upload d'images vers Cloudinary.
+// Le fichier est reçu en mémoire via multer (jamais écrit sur disque),
+// puis streamé vers Cloudinary qui retourne une URL publique sécurisée.
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
 
@@ -12,6 +15,8 @@ cloudinary.config({
 const storage = multer.memoryStorage();
 export const upload = multer({ storage });
 
+// Envoie le buffer de l'image vers le dossier "vision-board" de Cloudinary
+// et résout avec l'URL HTTPS (secure_url) de l'image hébergée
 export async function uploadToCloudinary(buffer) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

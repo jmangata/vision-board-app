@@ -1,3 +1,5 @@
+// Controller du profil utilisateur : consultation et mise à jour du compte
+// de l'utilisateur connecté (identité, email, mot de passe).
 import { prisma } from '../prisma.js';
 import bcrypt from 'bcrypt';
 
@@ -30,6 +32,8 @@ export const updateProfile = async (req, res) => {
     if (firstname) updateData.firstname = firstname;
     if (email) updateData.email = email;
 
+    // Changement de mot de passe : exige le mot de passe actuel pour
+    // empêcher qu'une session volée puisse verrouiller le compte
     if (newPassword) {
       if (!currentPassword) {
         return res.status(400).json({ message: 'Le mot de passe actuel est requis' });
@@ -39,6 +43,7 @@ export const updateProfile = async (req, res) => {
       if (!valid) {
         return res.status(401).json({ message: 'Mot de passe actuel incorrect' });
       }
+      // Le nouveau mot de passe est haché avant stockage (10 rounds de salt)
       updateData.passwordHash = await bcrypt.hash(newPassword, 10);
     }
 

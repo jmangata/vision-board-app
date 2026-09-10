@@ -1,3 +1,5 @@
+// Page Profil : affiche les infos du compte (avec compteurs d'objectifs
+// et de badges) et permet de modifier prénom, email et mot de passe.
  import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
@@ -10,6 +12,7 @@ function Profile() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
+  // Charge le profil au montage ; redirige vers /login si non connecté
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) { navigate('/login'); return; }
@@ -24,6 +27,8 @@ function Profile() {
     setError('');
     setMessage('');
     try {
+      // Les champs mot de passe ne sont envoyés que si l'utilisateur
+      // souhaite en changer (le backend exige alors le mot de passe actuel)
       const payload = { firstname: form.firstname, email: form.email };
       if (form.newPassword) {
         payload.currentPassword = form.currentPassword;
@@ -40,6 +45,8 @@ function Profile() {
     }
   };
 
+  // Déconnexion : suppression du token puis rechargement pour
+  // réinitialiser tout l'état applicatif
   const logout = () => {
     localStorage.removeItem('token');
     navigate('/login');

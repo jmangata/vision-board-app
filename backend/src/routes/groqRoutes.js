@@ -1,3 +1,6 @@
+// Route de suggestions IA via Groq : décompose un objectif en étapes.
+// Montée sur /api/groq dans index.js. Authentification requise.
+// Note : suggestionRoutes.js expose une route similaire sur /api/suggestions.
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
 import { suggestSteps } from '../services/groqService.js';

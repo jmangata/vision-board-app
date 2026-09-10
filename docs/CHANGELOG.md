@@ -374,3 +374,29 @@ Aucune logique de cache/context à gérer : `frontend/src/pages/Board.jsx` (page
 ### Ajustement — Position du bouton "Changer l'image"
 Position initiale : bas-droite de l'image (`bottom-3 right-3`), jugée peu pratique.
 Repositionné en **haut-droite** (`top-3 right-3`) dans `frontend/src/pages/GoalDetail.jsx` pour un rendu moins intrusif, moins proche des boutons d'action en bas.
+
+---
+
+## Commentaires du code sur les parties importantes du projet
+
+### Contexte
+Demande de documentation du code existant : ajouter des commentaires expliquant le rôle de chaque module et la logique non triviale, sans modifier le comportement.
+
+### Nature de la modification
+Aucun changement fonctionnel : uniquement des commentaires (en-têtes de fichier et commentaires en ligne) ajoutés en français, cohérents avec le style déjà présent.
+
+### Fichiers concernés
+- **Backend** : `backend/index.js` (déjà commenté), `backend/src/middlewares/authMiddleware.js`, `backend/src/jobs/reminderJob.js`, tous les controllers (`goalController`, `stepController`, `categoryController`, `reminderController`, `dashboardController`, `userController`, `badgeController`), tous les services (`badgeService`, `emailService`, `groqService`, `unsplashService`, `uploadService`), tous les fichiers de routes, `backend/prisma/schema.prisma` (rôle de chaque modèle), `backend/prisma/seed.js`, `backend/test-api.js`.
+- **Frontend** : `frontend/src/main.jsx`, `App.jsx` (routes + masquage de la BottomNav), `services/api.js` (intercepteur JWT), `authService.js`, `badgeService.js`, `goalService.js`, toutes les pages (`Login`, `Register`, `Board`, `Dashboard`, `Badges`, `Profile`, `CreateGoal`, `GoalDetail`), les composants (`GoalCard`, `BadgeCard`, `Navbar`, `BottomNav`), et les configs (`vite.config.js`, `tailwind.config.js`, `postcss.config.js`).
+- **Mobile** : `mobile/App.js`, `context/AuthContext.js`, `navigation/AppNavigator.js`, `services/api.js` (dont avertissement sur l'IP en dur), `services/authService.js`, `screens/LoginScreen.js`. Les autres fichiers mobile sont des stubs vides : rien à commenter.
+- **Config** : `docker-compose.yml` (rôle du port 5433), `render.yaml` (déploiement, réécriture SPA), `.github/workflows/ci.yml` (rôle des deux jobs).
+
+### Vérification
+- `node --check` passé sur tous les fichiers JS du backend.
+- `npm run build` du frontend : build Vite réussi (102 modules transformés).
+- Les commentaires JSX utilisent la syntaxe `{/* ... */}` où nécessaire.
+
+### Points de vigilance
+- Plusieurs fichiers source du dossier `mobile/` sont des stubs vides (3 octets) : ils n'ont pas été commentés.
+- `mobile/src/services/api.js` contient une URL d'API en dur (IP locale) : signalé dans un commentaire.
+- `render.yaml` contient des secrets en clair (JWT_SECRET, clés Cloudinary/Unsplash) committés dans le dépôt : à déplacer vers les variables d'environnement Render.

@@ -1,3 +1,6 @@
+// Écran de connexion de l'app mobile. Après authentification réussie,
+// le token est transmis à AuthContext.login() qui le persiste ; le
+// changement de token fait alors basculer AppNavigator vers l'app.
  import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { login as loginApi } from '../services/authService';
@@ -12,6 +15,8 @@ export default function LoginScreen() {
     setError('');
     try {
       const { data } = await loginApi(form);
+      // Persiste le token dans AsyncStorage et met à jour le contexte :
+      // le Stack Navigator affiche ensuite automatiquement les écrans protégés
       await login(data.token);
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');
