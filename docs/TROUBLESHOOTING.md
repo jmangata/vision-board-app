@@ -1,3 +1,31 @@
+---
+
+### 18. Configuration locale des variables d'environnement
+
+### Contexte
+Le lancement local du backend et du frontend nécessitait une configuration manuelle de PostgreSQL et de l'URL d'API.
+
+### Erreur constatée
+Le frontend Vite ne démarrait pas lorsque ses dépendances locales étaient incomplètes (`ERR_MODULE_NOT_FOUND` sur un fichier interne de Vite). Le backend devait également charger `.env` avant l'évaluation des modules utilisant les variables d'environnement.
+
+### Cause
+Le fichier `.env` local était absent et les scripts backend lançaient Node sans l'option `--env-file`.
+
+### Solution
+- Ajouter `backend/.env` avec la connexion PostgreSQL locale, le JWT et des valeurs de développement pour les intégrations externes.
+- Ajouter `frontend/.env` avec `VITE_API_URL=http://localhost:5000/api`.
+- Modifier les scripts `start` et `dev` du backend pour charger `.env` avec Node.
+- Réinstaller les dépendances frontend avec `npm ci` afin de restaurer l'installation Vite.
+
+### Vérification
+- `docker compose up -d postgres`
+- `npx prisma generate`
+- `npx prisma db push`
+- `npm run dev` dans `backend` puis `frontend`
+- `GET http://localhost:5000/api/health` retourne `{"status":"ok"}` et Vite répond sur le port `5173`.
+
+### Points de vigilance
+Les fichiers `.env` sont ignorés par Git. Remplacer les valeurs `local-placeholder` par de vraies clés pour activer Unsplash, Groq et Cloudinary. Ne jamais publier de clés d'API dans le dépôt.
 # Troubleshooting — Backend Vision Board
 
 ## 1. `SyntaxError: Named export 'PrismaClient' not found`
@@ -357,4 +385,3 @@ Les points ci-dessous n'ont pas encore été corrigés ; ils sont documentés ic
 **Solution préconisée** :
 - Nettoyer le `package.json` racine pour ne garder que des scripts globaux éventuels.
 - Supprimer `node_modules` à la racine et réinstaller dans chaque sous-dossier.
-
