@@ -24,8 +24,7 @@ services:
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-api
-    runtime: node                 # Runtime Node.js natif de Render (pas de Dockerfile)
-    region: frankfurt             # Région d'hébergement (oregon, singapore, frankfurt...)
+    runtime: node                 # Runtime Node.js natif de Render (pas de Dockerfile)          # Région d'hébergement (oregon, singapore, frankfurt...)
     plan: starter                 # Plan facturant sans spin-down. Mettre "free" pour tester.
     branch: main                  # Branche déployée
     rootDir: backend              # Dossier contenant le package.json du backend
@@ -103,8 +102,7 @@ services:
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-frontend
-    runtime: static               # Site statique (HTML/JS/CSS produits par Vite)
-    region: frankfurt             # Même région que le backend pour réduire la latence
+    runtime: static               # Site statique (HTML/JS/CSS produits par Vite)           # Même région que le backend pour réduire la latence
     plan: starter                 # Plan facturant. Mettre "free" pour tester.
     branch: main
     rootDir: frontend             # Dossier contenant le package.json du frontend
