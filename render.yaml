@@ -33,12 +33,13 @@ services:
     # Commande exécutée à chaque déploiement pour builder le service.
     # "npm ci" garantit une installation reproductible depuis package-lock.json.
     # "npx prisma generate" génère le client Prisma nécessaire au runtime.
-    buildCommand: npm ci && npx prisma generate
-
-    # Commande exécutée après le build mais avant le démarrage du service.
-    # Elle applique les migrations Prisma sur la base de données.
-    # Important : ne JAMAIS utiliser "prisma db push" ici (risque de perte de données).
-    preDeployCommand: npx prisma migrate deploy
+    # Commande exécutée à chaque déploiement.
+    # "npm ci" installe les dépendances.
+    # "npx prisma generate" génère le client Prisma.
+    # "npx prisma migrate deploy" applique les migrations sur la base.
+    # Note : sur le plan gratuit Render, "preDeployCommand" n'est pas supporté,
+    # c'est pourquoi les migrations sont incluses directement dans le build.
+    buildCommand: npm ci && npx prisma generate && npx prisma migrate deploy
 
     # Commande de démarrage du serveur Express.
     startCommand: node index.js
@@ -104,7 +105,6 @@ services:
   - type: web
     name: visionboard-frontend
     runtime: static               # Site statique (HTML/JS/CSS produits par Vite)
-    region: oregon                # Plan gratuit disponible uniquement dans la région oregon
     plan: free                     # Site statique toujours gratuit chez Render
     branch: main
     rootDir: frontend             # Dossier contenant le package.json du frontend
