@@ -105,7 +105,6 @@ services:
   - type: web
     name: visionboard-frontend
     runtime: static               # Site statique (HTML/JS/CSS produits par Vite)
-    plan: free                     # Site statique toujours gratuit chez Render
     branch: main
     rootDir: frontend             # Dossier contenant le package.json du frontend
 
