@@ -47,7 +47,7 @@ export default function AppNavigator() {
             {/* En mode connecté : onglets principaux et écrans secondaires empilés au-dessus. */}
             <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
             <Stack.Screen name="GoalDetail" component={GoalDetailScreen} options={{ title: "Détail de l'objectif" }} />
-            <Stack.Screen name="CreateGoal" component={CreateGoalScreen} options={{ title: 'Nouvel objectif' }} />
+            <Stack.Screen name="CreateGoal" component={CreateGoalScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

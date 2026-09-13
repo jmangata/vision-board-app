@@ -10,12 +10,11 @@ const prisma = new PrismaClient();
 async function main() {
   // Catégories proposées à l'utilisateur lors de la création d'objectifs.
   const categories = [
-    { name: 'Santé', color: '#2E5797', icon: 'heart' },
-    { name: 'Carrière', color: '#1D9E75', icon: 'briefcase' },
-    { name: 'Finances', color: '#D85A30', icon: 'dollar-sign' },
-    { name: 'Apprentissage', color: '#8E44AD', icon: 'book-open' },
-    { name: 'Voyages', color: '#F39C12', icon: 'map' },
-    { name: 'Relations', color: '#E74C3C', icon: 'users' },
+    { name: 'Sport', color: '#1565C0', icon: 'dumbbell' },
+    { name: 'Musique', color: '#7B1FA2', icon: 'music-note' },
+    { name: 'Voyage', color: '#F39C12', icon: 'map' },
+    { name: 'Finance', color: '#D85A30', icon: 'dollar-sign' },
+    { name: 'Lecture', color: '#8E44AD', icon: 'book-open' },
   ];
 
   // upsert : met à jour si la catégorie existe déjà, sinon la crée.

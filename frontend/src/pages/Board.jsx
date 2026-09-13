@@ -6,10 +6,32 @@ import { getGoals } from '../services/goalService.js';
 import api from '../services/api.js';
 import GoalCard from '../components/GoalCard.jsx';
 
+const visibleCategoryNames = ['Sport', 'Musique', 'Voyage', 'Finance', 'Lecture'];
+
+const welcomeMessages = [
+  (firstname) => `Ravi de te revoir, ${firstname} ! Prêt à avancer vers tes objectifs ?`,
+  (firstname) => `Bonjour ${firstname} ! Chaque petit pas te rapproche de ta vision.`,
+  (firstname) => `Heureux de te retrouver, ${firstname} ! Faisons de cette journée une réussite.`,
+  (firstname) => `Bienvenue ${firstname} ! Tes ambitions méritent toute ton énergie.`,
+  (firstname) => `Content de te revoir, ${firstname} ! Quel rêve vas-tu faire avancer aujourd’hui ?`,
+  (firstname) => `C’est un plaisir de te retrouver, ${firstname} ! Continue sur cette belle lancée.`,
+];
+
 function Board() {
   const [goals, setGoals] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeCategory, setActiveCategory] = useState('all');
+  const [welcome, setWelcome] = useState(() => {
+    const storedWelcome = localStorage.getItem('pendingWelcome');
+    if (!storedWelcome) return null;
+    try {
+      const parsedWelcome = JSON.parse(storedWelcome);
+      if (!parsedWelcome.firstname) return null;
+      return { ...parsedWelcome, variant: Number.isInteger(parsedWelcome.variant) ? parsedWelcome.variant : 0 };
+    } catch {
+      return null;
+    }
+  });
   // Vérifie la présence du token pour afficher soit le contenu, soit un écran de connexion.
   const token = localStorage.getItem('token');
   const navigate = useNavigate();
@@ -23,8 +45,17 @@ function Board() {
   // Recharge les objectifs au montage ou si le token change.
   useEffect(() => {
     fetchGoals();
-    api.get('/categories').then((res) => setCategories(res.data));
+    api.get('/categories').then((res) => {
+      const visibleCategories = visibleCategoryNames
+        .map((name) => res.data.find((category) => category.name === name))
+        .filter(Boolean);
+      setCategories(visibleCategories);
+    });
   }, [token]);
+
+  useEffect(() => {
+    if (welcome) localStorage.removeItem('pendingWelcome');
+  }, [welcome]);
 
   if (!token) {
     return (
@@ -44,7 +75,9 @@ function Board() {
 
   const filteredGoals = activeCategory === 'all'
     ? goals
-    : goals.filter((goal) => goal.category?.id === activeCategory);
+    : activeCategory === 'other'
+      ? goals.filter((goal) => !visibleCategoryNames.includes(goal.category?.name))
+      : goals.filter((goal) => goal.category?.id === activeCategory);
 
   return (
     <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28 md:max-w-none">
@@ -69,7 +102,22 @@ function Board() {
       </header>
 
       <main className="px-5 pt-7 md:px-8 md:pt-6">
-        <div className="-mx-5 mb-7 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide md:hidden">
+        {welcome && (
+          <div className="relative mb-7 overflow-hidden rounded-2xl bg-primary-container px-5 py-5 text-white shadow-lg md:max-w-2xl">
+            <div className="relative z-10 pr-8">
+              <p className="text-lg font-bold">Un nouveau pas vers ta vision</p>
+              <p className="mt-1 text-sm leading-5 text-white/85">
+                {welcomeMessages[welcome.variant % welcomeMessages.length](welcome.firstname)}
+              </p>
+            </div>
+            <span className="material-symbols-outlined absolute -bottom-3 -right-2 text-7xl text-white/10">auto_awesome</span>
+            <button type="button" onClick={() => setWelcome(null)} className="absolute right-3 top-3 z-20 flex h-8 w-8 items-center justify-center rounded-full text-white/80 hover:bg-white/10 hover:text-white" aria-label="Fermer le message d'accueil">
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+          </div>
+        )}
+
+        <div className="-mx-5 mb-7 flex gap-2 overflow-x-auto px-5 pb-1 scrollbar-hide md:mx-0 md:px-0">
           <button
             type="button"
             onClick={() => setActiveCategory('all')}
@@ -87,6 +135,13 @@ function Board() {
               {category.name}
             </button>
           ))}
+          <button
+            type="button"
+            onClick={() => setActiveCategory('other')}
+            className={`h-10 shrink-0 rounded-full px-6 text-sm font-semibold transition-colors ${activeCategory === 'other' ? 'bg-primary-container text-white' : 'bg-surface-container-low text-on-surface-variant'}`}
+          >
+            Autre
+          </button>
         </div>
 
         {goals.length === 0 && (
@@ -109,16 +164,16 @@ function Board() {
           </div>
         )}
 
-        {goals.length > 0 && (
+        {filteredGoals.length > 0 && (
           <div className="hidden gap-4 md:grid md:grid-cols-2 lg:grid-cols-3">
-            {goals.map((goal) => (
+            {filteredGoals.map((goal) => (
               <GoalCard key={goal.id} goal={goal} onUpdate={fetchGoals} />
             ))}
           </div>
         )}
 
         {goals.length > 0 && filteredGoals.length === 0 && (
-          <p className="py-16 text-center text-sm text-outline md:hidden">Aucun objectif dans cette catégorie.</p>
+          <p className="py-16 text-center text-sm text-outline">Aucun objectif dans cette catégorie.</p>
         )}
       </main>
     </div>

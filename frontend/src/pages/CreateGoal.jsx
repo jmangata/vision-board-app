@@ -6,10 +6,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api.js';
 import { createGoal, uploadImage,suggestSteps } from '../services/goalService.js';
 
+const categoryOrder = ['Sport', 'Musique', 'Voyage', 'Finance', 'Lecture'];
 
 function CreateGoal() {
   // Catégories disponibles pour le choix du thème.
   const [categories, setCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   // Valeurs du formulaire principal.
   const [form, setForm] = useState({ title: '', description: '', targetDate: '', categoryId: '' });
   const [loading, setLoading] = useState(false);
@@ -18,8 +20,11 @@ function CreateGoal() {
   // Gestion de l'image de couverture.
   const [photos, setPhotos] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [searchingImages, setSearchingImages] = useState(false);
   const [imageUrl, setImageUrl] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFileName, setSelectedFileName] = useState('');
+  const [showUnsplashSearch, setShowUnsplashSearch] = useState(false);
 
   // Gestion des étapes suggérées par l'IA.
   const [suggestedSteps, setSuggestedSteps] = useState([]);
@@ -34,19 +39,34 @@ function CreateGoal() {
   // Charge les catégories au montage et pré-sélectionne la première par défaut.
   useEffect(() => {
     api.get('/categories').then((res) => {
-      setCategories(res.data);
-      if (res.data.length) setForm((f) => ({ ...f, categoryId: res.data[0].id }));
+      const orderedCategories = categoryOrder
+        .map((name) => res.data.find((category) => category.name === name))
+        .filter(Boolean);
+      setAllCategories(res.data);
+      setCategories(orderedCategories);
+      if (orderedCategories.length) setForm((f) => ({ ...f, categoryId: orderedCategories[0].id }));
     });
   }, []);
 
 // Recherche des images libres de droits sur Unsplash à partir du terme saisi.
 const searchImages = async () => {
-  if (!searchQuery.trim()) return;
+  const query = searchQuery.trim();
+  if (!query) {
+    setError('Saisis un mot-clé pour rechercher une image.');
+    return;
+  }
+  setSearchingImages(true);
+  setError('');
   try {
-    const res = await api.get(`/unsplash/search?query=${searchQuery}`);
-    setPhotos(res.data);
+    const res = await api.get('/unsplash/search', { params: { query } });
+    const results = Array.isArray(res.data) ? res.data : [];
+    setPhotos(results);
+    if (!results.length) setError('Aucune image trouvée pour cette recherche.');
   } catch (err) {
-    console.error('Erreur recherche Unsplash', err);
+    setPhotos([]);
+    setError(err.response?.data?.message || 'La recherche Unsplash a échoué.');
+  } finally {
+    setSearchingImages(false);
   }
 };
 
@@ -68,7 +88,7 @@ if (categoryId === 'other') {
     return;
   }
 
-  const existingCategory = categories.find(
+  const existingCategory = allCategories.find(
     // Normalise la comparaison pour éviter les doublons par casse ou espaces.
     (c) => c.name.trim().toLowerCase() === trimmedName.toLowerCase()
   );
@@ -114,11 +134,14 @@ if (categoryId === 'other') {
   // Correspondance entre les icônes de catégorie et les noms Material Symbols.
   const iconMap = {
     book: 'menu_book',
+    'book-open': 'menu_book',
     briefcase: 'work',
     'dollar-sign': 'payments',
     users: 'groups',
     heart: 'favorite',
     map: 'flight',
+    dumbbell: 'fitness_center',
+    'music-note': 'music_note',
   };
 
   // Upload d'une image depuis l'appareil de l'utilisateur.
@@ -131,6 +154,7 @@ if (categoryId === 'other') {
     return;
   }
 
+  setSelectedFileName(file.name);
   setUploading(true);
   setError('');
   try {
@@ -165,90 +189,91 @@ const handleSuggestSteps = async () => {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <header className="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md h-16 flex justify-between items-center px-5 shadow-soft">
-        <Link to="/" className="text-primary">
-          <span className="material-symbols-outlined">close</span>
+      <header className="fixed top-0 z-50 flex h-20 w-full items-center justify-between bg-surface/90 px-7 shadow-soft backdrop-blur-md">
+        <Link to="/" className="flex h-10 w-10 items-center justify-start text-primary">
+          <span className="material-symbols-outlined text-3xl">close</span>
         </Link>
-        <h1 className="text-lg font-semibold text-primary">Nouvel Objectif</h1>
+        <h1 className="text-xl font-bold text-primary">Nouvel Objectif</h1>
         <div className="w-6" />
       </header>
 
-      <main className="pt-24 px-5 max-w-lg mx-auto">
-        <form id="goal-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {error && <p className="text-error text-sm font-medium">{error}</p>}
-          <div>
-            <label className="block text-sm font-semibold text-outline mb-2">Titre de l'objectif</label>
+      <main className="mx-auto max-w-lg px-7 pt-28">
+        <form id="goal-form" onSubmit={handleSubmit} className="flex flex-col gap-8">
+          {error && <p className="order-[6] rounded-xl bg-error-container px-4 py-3 text-sm font-medium text-error">{error}</p>}
+          <div className="order-1">
+            <label className="mb-3 block text-base font-semibold text-outline">Titre de l'objectif</label>
             <input
               placeholder="Ex: Courir un marathon"
-              className="input-field"
+              className="h-20 w-full rounded-2xl border-0 bg-surface-container-low px-5 text-lg font-medium text-on-surface outline-none ring-primary-container transition-shadow focus:ring-2"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
             />
-             <p className="text-xs text-outline mt-2">Donne un nom clair et motivant à ton objectif.</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-outline mb-2">Description</label>
+          <div className="order-2">
+            <label className="mb-3 block text-base font-semibold text-outline">Description</label>
             <textarea
               placeholder="Pourquoi cet objectif est-il important ?"
-              rows={3}
-              className="w-full bg-surface-container-low rounded-xl p-4 font-medium text-on-surface border-none focus:ring-2 focus:ring-primary-container transition-all resize-none"
+              rows={4}
+              className="w-full resize-none rounded-2xl border-0 bg-surface-container-low p-5 text-base font-medium text-on-surface outline-none ring-primary-container transition-shadow focus:ring-2"
               value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
             />
-             <p className="text-xs text-outline mt-2">Explique brièvement pourquoi cet objectif compte pour toi.</p>
           </div>
-<div>
-  <label className="block text-sm font-semibold text-outline mb-2">Image de couverture (optionnel)</label>
-  <p className="text-xs text-outline mb-3">
-    Recherche une image sur Unsplash ou choisis-en une depuis ton appareil.
-  </p>
+<section className="order-4">
+  <label className="mb-3 block text-base font-semibold text-outline">Image de couverture</label>
+  {imageUrl ? (
+    <div className="relative mb-3 aspect-[16/9] overflow-hidden rounded-2xl bg-surface-container">
+      <img src={imageUrl} alt="Aperçu de la couverture" className="h-full w-full object-cover" />
+      <button type="button" onClick={() => { setImageUrl(''); setSelectedFileName(''); }} className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-primary shadow-soft" aria-label="Supprimer l'image sélectionnée">
+        <span className="material-symbols-outlined">close</span>
+      </button>
+    </div>
+  ) : null}
 
-  <input
-    type="file"
-    accept="image/*"
-    onChange={handleFileUpload}
-    className="mb-3 text-sm text-outline file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-container file:text-white hover:file:bg-primary-container/90"
-  />
-  {uploading && <p className="text-xs text-outline mb-2">Téléchargement en cours...</p>}
-
-  <div className="flex gap-2 mb-3">
-    <input
-      placeholder="Ex: marathon, voyage, lecture..."
-      className="input-field flex-1"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchImages())}
-    />
-    <button type="button" onClick={searchImages} className="w-12 h-14 bg-primary-container text-white rounded-xl flex items-center justify-center">
-      <span className="material-symbols-outlined">search</span>
+  <div className="grid grid-cols-2 gap-4">
+    <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-outline-variant text-outline transition-colors hover:border-primary-container hover:text-primary">
+      <span className="material-symbols-outlined mb-3 text-4xl">add_a_photo</span>
+      <span className="text-sm font-medium">{uploading ? 'Import en cours...' : 'Importer'}</span>
+      {selectedFileName && <span className="mt-1 max-w-[80%] truncate text-xs">{selectedFileName}</span>}
+      <input type="file" accept="image/*" onChange={handleFileUpload} disabled={uploading} className="sr-only" />
+    </label>
+    <button type="button" onClick={() => setShowUnsplashSearch((visible) => !visible)} className={`flex aspect-square flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-colors ${showUnsplashSearch ? 'border-primary-container bg-primary-container/5 text-primary' : 'border-outline-variant text-outline hover:border-primary-container hover:text-primary'}`}>
+      <span className="material-symbols-outlined mb-3 text-4xl">search</span>
+      <span className="text-sm font-medium">Recherche Unsplash</span>
     </button>
   </div>
-  
-  {photos.length > 0 && (
-    <div className="grid grid-cols-3 gap-2">
-      {photos.map((photo) => (
-        <button
-          type="button"
-          key={photo.id}
-          onClick={() => { setImageUrl(photo.url); setPhotos([]); }}
-          className={`rounded-xl overflow-hidden border-2 transition-all ${imageUrl === photo.url ? 'border-primary-container' : 'border-transparent'}`}
-        >
-          <img src={photo.thumb} alt={photo.alt} className="w-full h-20 object-cover" />
+
+  {showUnsplashSearch && (
+    <div className="mt-4 rounded-2xl bg-surface-container-low p-4">
+      <div className="flex gap-2">
+        <input placeholder="Montagne, voyage, lecture..." className="h-14 min-w-0 flex-1 rounded-xl border-0 bg-white px-4 font-medium text-on-surface outline-none ring-primary-container focus:ring-2" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), searchImages())} autoFocus />
+        <button type="button" onClick={searchImages} disabled={searchingImages} className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary-container text-white disabled:opacity-60" aria-label="Rechercher sur Unsplash">
+          <span className={`material-symbols-outlined ${searchingImages ? 'animate-spin' : ''}`}>{searchingImages ? 'progress_activity' : 'search'}</span>
         </button>
-      ))}
+      </div>
+      {photos.length > 0 && (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {photos.map((photo) => (
+            <button type="button" key={photo.id} onClick={() => { setImageUrl(photo.url); setSelectedFileName(''); setPhotos([]); setShowUnsplashSearch(false); }} className="group relative aspect-[4/3] overflow-hidden rounded-xl bg-surface-container focus:outline-none focus:ring-2 focus:ring-primary-container">
+              <img src={photo.thumb} alt={photo.alt || 'Résultat Unsplash'} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2 pb-2 pt-6 text-left text-[10px] font-medium text-white">{photo.credit}</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )}
-</div>
+</section>
 
-          <div>
-            <label className="block text-sm font-semibold text-outline mb-2">Catégorie</label>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="order-3">
+            <label className="mb-4 block text-base font-semibold text-outline">Catégorie</label>
+            <div className="grid grid-cols-2 gap-4">
               {categories.map((c) => (
                 <label
                   key={c.id}
-                  className={`relative flex items-center justify-center h-20 rounded-xl cursor-pointer border-2 transition-all ${
+                  className={`relative flex h-28 cursor-pointer items-center justify-center rounded-2xl border-2 transition-all ${
                     form.categoryId === c.id
                       ? 'border-primary-container bg-primary-container/5'
                       : 'border-transparent bg-surface-container-lowest hover:bg-surface-container'
@@ -262,8 +287,8 @@ const handleSuggestSteps = async () => {
                     checked={form.categoryId === c.id}
                     onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
                   />
-                  <div className="flex flex-col items-center gap-1">
-                    <span className="material-symbols-outlined text-primary-container">
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="material-symbols-outlined text-3xl text-primary-container">
                       {iconMap[c.icon] || 'label'}
                     </span>
                     <span className="text-xs font-semibold text-on-surface">{c.name}</span>
@@ -272,7 +297,7 @@ const handleSuggestSteps = async () => {
               ))}
 
               <label
-                className={`relative flex items-center justify-center h-20 rounded-xl cursor-pointer border-2 transition-all ${
+                className={`relative flex h-28 cursor-pointer items-center justify-center rounded-2xl border-2 transition-all ${
                   form.categoryId === 'other'
                     ? 'border-primary-container bg-primary-container/5'
                     : 'border-transparent bg-surface-container-lowest hover:bg-surface-container'
@@ -300,7 +325,7 @@ const handleSuggestSteps = async () => {
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex : Cuisine, Musique, Maison..."
+                  placeholder="Ex : Cuisine, Musique, Jardinage..."
                   className="input-field"
                   value={customCategoryName}
                   onChange={(e) => setCustomCategoryName(e.target.value)}
@@ -313,17 +338,17 @@ const handleSuggestSteps = async () => {
             )}
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-outline mb-2">Date d'échéance (optionnel)</label>
+          <div className="order-5">
+            <label className="mb-3 block text-base font-semibold text-outline">Date d'échéance (optionnel)</label>
             <input
               type="date"
-              className="input-field"
+              className="h-20 w-full rounded-2xl border-0 bg-surface-container-low px-5 text-lg font-medium text-on-surface outline-none ring-primary-container focus:ring-2"
               value={form.targetDate}
               onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
             />
           </div>
-              <div>
-  <label className="block text-sm font-semibold text-outline mb-2">Étapes suggérées</label>
+              <div className="order-7">
+  <label className="mb-2 block text-base font-semibold text-outline">Étapes suggérées</label>
   <p className="text-xs text-outline mb-2">
     Groq peut te proposer des étapes basées sur ton objectif.
   </p>
@@ -331,7 +356,7 @@ const handleSuggestSteps = async () => {
     type="button"
     onClick={handleSuggestSteps}
     disabled={loadingSuggestions}
-    className="w-full h-12 bg-surface-container text-primary-container font-semibold rounded-full mb-3 flex items-center justify-center gap-2"
+    className="mb-3 flex h-20 w-full items-center justify-center gap-2 rounded-full bg-surface-container text-lg font-bold text-primary-container shadow-soft transition-transform active:scale-[0.98] disabled:opacity-70"
   >
     <span className="material-symbols-outlined">auto_awesome</span>
     {loadingSuggestions ? 'Chargement...' : 'Suggérer des étapes'}
@@ -341,7 +366,7 @@ const handleSuggestSteps = async () => {
     <div className="space-y-2">
       <p className="text-xs text-outline">Sélectionne les étapes à conserver :</p>
       {suggestedSteps.map((step, i) => (
-        <label key={i} className="flex items-center gap-3 p-3 bg-surface-container-lowest rounded-xl cursor-pointer">
+        <label key={i} className="flex min-h-16 cursor-pointer items-center gap-4 rounded-xl bg-surface-container-lowest p-4">
           <input
             type="checkbox"
             checked={selectedSteps.includes(i)}
@@ -352,9 +377,9 @@ const handleSuggestSteps = async () => {
                 setSelectedSteps(selectedSteps.filter((idx) => idx !== i));
               }
             }}
-            className="w-5 h-5 accent-primary-container"
+            className="h-6 w-6 shrink-0 cursor-pointer accent-primary-container"
           />
-          <span className="text-sm text-on-surface">{step.title}</span>
+          <span className="min-w-0 flex-1 text-sm leading-5 text-on-surface">{step.title}</span>
         </label>
       ))}
     </div>
@@ -365,7 +390,7 @@ const handleSuggestSteps = async () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full h-14 bg-primary-container text-white font-semibold rounded-full shadow-lg pill-button flex items-center justify-center gap-2 disabled:opacity-70"
+            className="order-8 flex h-20 w-full items-center justify-center gap-2 rounded-full bg-primary-container text-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-70"
           >
             {loading ? 'Création...' : "Créer l'objectif"}
             <span className="material-symbols-outlined">auto_awesome</span>

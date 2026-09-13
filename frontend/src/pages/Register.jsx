@@ -1,22 +1,20 @@
 // Register.jsx : page d'inscription.
 // Elle crée un nouveau compte via l'API, stocke le JWT reçu et redirige vers l'accueil.
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../services/authService.js';
+import { Link } from 'react-router-dom';
+import { prepareWelcome, register } from '../services/authService.js';
 
 function Register() {
   const [form, setForm] = useState({ email: '', password: '', firstname: '' });
   const [error, setError] = useState('');
-  const navigate = useNavigate();
-
   // Enregistre l'utilisateur, persiste le token et recharge la session.
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const { data } = await register(form);
       localStorage.setItem('token', data.token);
-      navigate('/');
-      window.location.reload();
+      prepareWelcome(data.user.firstname);
+      window.location.replace('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur d\'inscription');
     }

@@ -16,4 +16,19 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isUnauthorized = error.response?.status === 401;
+    const isAuthRequest = error.config?.url?.startsWith('/auth/');
+
+    if (isUnauthorized && !isAuthRequest) {
+      localStorage.removeItem('token');
+      if (window.location.pathname !== '/login') window.location.replace('/login');
+    }
+
+    return Promise.reject(error);
+  }
+);
+
 export default api;

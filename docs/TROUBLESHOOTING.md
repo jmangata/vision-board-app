@@ -385,3 +385,88 @@ Les points ci-dessous n'ont pas encore été corrigés ; ils sont documentés ic
 **Solution préconisée** :
 - Nettoyer le `package.json` racine pour ne garder que des scripts globaux éventuels.
 - Supprimer `node_modules` à la racine et réinstaller dans chaque sous-dossier.
+
+---
+
+## 19. Frontend — `npm run dev` : `ERR_MODULE_NOT_FOUND` sur un chunk interne de Vite
+
+### Contexte
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'C:\developpement\vision-board-app\frontend\node_modules\vite\dist\node\chunks\dep-BK3b2jBa.js'
+    at finalizeResolution (node:internal/modules/esm/resolve:274:11)
+    ...
+```
+
+### Cause
+Installation `node_modules` du frontend corrompue/incomplète : le dossier `node_modules/vite` ne contenait pas tous les fichiers attendus par la version verrouillée dans `frontend/package-lock.json` (`vite@5.4.21`). Le fichier chunk interne référencé n'existait tout simplement pas sur le disque, alors que le `package.json`/lockfile étaient cohérents.
+
+### Solution
+Réinstaller proprement les dépendances du frontend :
+```bash
+cd frontend
+rm -r node_modules, package-lock.json   # ou Remove-Item -Recurse -Force sous PowerShell
+npm install
+npm run dev
+```
+
+### Point de vigilance
+Comme pour les points 2 et 5, une erreur `ERR_MODULE_NOT_FOUND`/`Cannot find module` pointant vers un fichier interne d'un package (chunk, `.prisma/client`, etc.) est généralement le signe d'une installation `node_modules` incomplète ou corrompue, pas d'un bug de code. Réflexe : supprimer `node_modules` + lockfile puis `npm install` avant de chercher plus loin.
+
+---
+
+## 20. APIs protégées — réponses `401 Unauthorized` après un changement de configuration
+
+### Contexte
+Depuis le formulaire de création, l'upload d'image, la recherche Unsplash, les suggestions Groq et la création d'objectif retournaient tous `401 Unauthorized`.
+
+### Erreur constatée
+Les requêtes `POST /api/upload/image`, `POST /api/groq/suggestions`, `POST /api/goals` et `GET /api/unsplash/search` échouaient avec le statut HTTP `401`. Le formulaire restait néanmoins accessible et continuait d'envoyer le même token invalide.
+
+### Cause
+Un JWT ancien était encore présent dans `localStorage`. Après expiration du token ou modification de `JWT_SECRET`, sa signature n'est plus acceptée par `authMiddleware`. Le frontend injectait correctement ce token, mais ne supprimait pas la session après une réponse `401`.
+
+### Solution
+- Fichier modifié : `frontend/src/services/api.js`.
+- Ajout d'un intercepteur Axios de réponse qui détecte les `401` hors endpoints de connexion.
+- Suppression automatique du token invalide et redirection vers `/login` afin d'obtenir un nouveau JWT.
+- Les erreurs `401` de `/auth/login` et `/auth/register` restent affichées normalement sans boucle de redirection.
+
+### Vérification
+1. Placer un token invalide dans `localStorage`, puis appeler une route protégée.
+2. Vérifier que le token est supprimé et que l'application redirige vers `/login`.
+3. Se reconnecter, puis tester Unsplash, Groq, l'upload et la création d'un objectif.
+4. Exécuter `npm run build` dans `frontend/`.
+
+### Points de vigilance
+- Après une modification de `JWT_SECRET`, tous les tokens émis précédemment deviennent invalides et les utilisateurs doivent se reconnecter.
+- Le backend doit être lancé depuis `backend/` afin que son fichier `.env` soit chargé.
+
+---
+
+## 21. Inscription — erreur `500 Internal Server Error` après l'ajout du streak
+
+### Contexte
+Après la reconnexion imposée par l'invalidation du JWT, `POST /api/auth/register` retournait systématiquement une erreur `500`.
+
+### Erreur constatée
+Le contrôleur d'inscription tentait de créer l'utilisateur avec `lastLoginAt` et `streakDays`, mais Prisma signalait `Unknown field lastLoginAt` et la migration correspondante était indiquée comme non appliquée.
+
+### Cause
+La migration `20260824162729_add_streak_fields` existait dans le dépôt mais n'avait pas été appliquée à la base locale. Le client Prisma présent dans `node_modules` avait également été généré avant l'ajout de ces champs.
+
+### Solution
+- Application de la migration additive avec `npx prisma migrate deploy`.
+- Régénération du client avec `npx prisma generate`.
+- Redémarrage du backend afin de libérer puis recharger le moteur Prisma sous Windows.
+- Aucune ligne utilisateur existante n'a été supprimée ; les nouvelles colonnes sont ajoutées avec des valeurs compatibles.
+
+### Vérification
+1. Exécuter `npx prisma migrate status` dans `backend/` et vérifier que le schéma est à jour.
+2. Lire `lastLoginAt` et `streakDays` via Prisma sans erreur de champ inconnu.
+3. Créer un compte depuis `/register` et vérifier une réponse HTTP `201`.
+4. Vérifier que le backend redémarre sur le port `5000`.
+
+### Points de vigilance
+- Sous Windows, arrêter le backend avant `npx prisma generate` si `query_engine-windows.dll.node` est verrouillé avec une erreur `EPERM`.
+- Après chaque modification de `schema.prisma`, appliquer les migrations puis régénérer le client avant de relancer le serveur.
