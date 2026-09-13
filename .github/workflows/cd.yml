@@ -1,0 +1,37 @@
+name: CD
+
+# Déclenchement uniquement après merge/push sur la branche principale.
+on:
+  push:
+    branches: [main]
+
+# Empêche deux déploiements de se marcher sur les pieds si plusieurs commits arrivent rapidement.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Run CI checks
+    # Réutilise le workflow CI existant : si les checks échouent, le déploiement s'arrête.
+    uses: ./.github/workflows/ci.yml
+
+  deploy-backend:
+    name: Deploy backend to Render
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -X POST "$RENDER_DEPLOY_HOOK_BACKEND"
+        env:
+          RENDER_DEPLOY_HOOK_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+
+  deploy-frontend:
+    name: Deploy frontend to Render
+    needs: [ci, deploy-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render deploy hook
+        run: curl -X POST "$RENDER_DEPLOY_HOOK_FRONTEND"
+        env:
+          RENDER_DEPLOY_HOOK_FRONTEND: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}

@@ -1,40 +1,86 @@
-databases:
-  - name: visionboard-db
-    databaseName: visionboard
-    user: visionboard_user
+# Render Blueprint — Vision Board App
+# Documentation : https://render.com/docs/infrastructure-as-code
+# Ce fichier déclare l'infrastructure de production/staging pour le backend,
+# la base PostgreSQL et le frontend statique.
 
 services:
+  # ---------------------------------------------------------------------------
+  # Backend API (Node.js / Express / Prisma)
+  # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-api
     runtime: node
+    region: frankfurt            # Change en "oregon" / "singapore" si besoin
+    plan: starter                # "free" possible pour tester (spin-down après 15 min)
+    branch: main
     rootDir: backend
-    buildCommand: npm install && npx prisma generate && npx prisma db push && npm run seed
+    buildCommand: npm ci && npx prisma generate
+    preDeployCommand: npx prisma migrate deploy
     startCommand: node index.js
+    healthCheckPath: /api/health
+    autoDeployTrigger: 'off'     # Déclenchement manuel via hook GitHub Actions
     envVars:
+      - key: NODE_ENV
+        value: production
+      # Le port est injecté automatiquement par Render.
+      # Base de données provisionnée ci-dessous.
       - key: DATABASE_URL
         fromDatabase:
           name: visionboard-db
           property: connectionString
+      # Secrets applicatifs — définir dans le dashboard Render après le premier déploiement.
       - key: JWT_SECRET
-        value: k8Xp2mN7qR4vW9zB3cF6hJ1dL5gT0yA8sE2uI4oP7nM
+        sync: false
       - key: JWT_EXPIRES_IN
         value: 7d
-      - key: UNSPLASH_ACCESS_KEY
-        value: 0tD_RBe9ydiRDVHAsSPq2dsMNcIq_oE2jn-NDDQcwFY
       - key: CLOUDINARY_CLOUD_NAME
-        value: visionboard
+        sync: false
       - key: CLOUDINARY_API_KEY
-        value: 234116794513513
+        sync: false
       - key: CLOUDINARY_API_SECRET
-        value: H9IZJRRTGo8rsjidHGgXyDDrijY
+        sync: false
+      - key: UNSPLASH_ACCESS_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
 
+  # ---------------------------------------------------------------------------
+  # Frontend web (React + Vite, build statique)
+  # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-frontend
     runtime: static
+    region: frankfurt
+    plan: starter
+    branch: main
     rootDir: frontend
-    buildCommand: npm install && npm run build
-    staticPublishPath: dist
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    autoDeployTrigger: 'off'
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # URL complète du backend + /api, par exemple :
+      # https://visionboard-api-xxx.onrender.com/api
+      # À définir manuellement dans le dashboard Render après le premier déploiement backend.
+      - key: VITE_API_URL
+        sync: false
+
+databases:
+  - name: visionboard-db
+    databaseName: visionboard
+    user: visionboard_user
+    plan: basic-1gb              # "free" possible pour tester (30 jours puis passage payant)
+    ipAllowList: []             # Autorise uniquement les services Render par défaut
