@@ -30,6 +30,13 @@ Ce document décrit la mise en place du déploiement continu (CD) pour l'applica
 > **Pourquoi GitHub Actions + deploy hooks plutôt que l'auto-deploy Render ?**
 > Cela garantit que la CI passe avant tout déploiement, offre une traçabilité centralisée dans GitHub et permet de déployer conditionnellement plusieurs services.
 
+> **⚠️ Gratuité et région**
+> Les plans `free` de Render (web service + PostgreSQL) ne sont disponibles que dans la région **oregon**. C'est pourquoi le Blueprint utilise `region: oregon`. Le site statique est lui toujours gratuit.
+> Limites à connaître :
+> - Le web service `free` s'arrête après 15 min d'inactivité (cold start de ~30 s à la prochaine requête).
+> - La base PostgreSQL `free` expire automatiquement après 30 jours.
+> - Pour un usage continu en production, il faudra passer à des plans payants.
+
 ---
 
 ## Composants déployés
@@ -158,8 +165,8 @@ services:
   - type: web
     name: visionboard-api
     runtime: node
-    region: frankfurt
-    plan: starter
+    region: oregon
+    plan: free
     branch: main
     rootDir: backend
     buildCommand: npm ci && npx prisma generate

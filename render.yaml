@@ -24,8 +24,9 @@ services:
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-api
-    runtime: node                 # Runtime Node.js natif de Render (pas de Dockerfile)          # Région d'hébergement (oregon, singapore, frankfurt...)
-    plan: starter                 # Plan facturant sans spin-down. Mettre "free" pour tester.
+    runtime: node                 # Runtime Node.js natif de Render (pas de Dockerfile)
+    region: oregon                # Plan gratuit disponible uniquement dans la région oregon
+    plan: free                     # Plan gratuit (spin-down après 15 min d'inactivité)
     branch: main                  # Branche déployée
     rootDir: backend              # Dossier contenant le package.json du backend
 
@@ -102,8 +103,9 @@ services:
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-frontend
-    runtime: static               # Site statique (HTML/JS/CSS produits par Vite)           # Même région que le backend pour réduire la latence
-    plan: starter                 # Plan facturant. Mettre "free" pour tester.
+    runtime: static               # Site statique (HTML/JS/CSS produits par Vite)
+    region: oregon                # Plan gratuit disponible uniquement dans la région oregon
+    plan: free                     # Site statique toujours gratuit chez Render
     branch: main
     rootDir: frontend             # Dossier contenant le package.json du frontend
 
@@ -145,5 +147,5 @@ databases:
   - name: visionboard-db
     databaseName: visionboard
     user: visionboard_user
-    plan: basic-1gb               # Plan facturant. "free" disponible 30 jours pour tester.
+    plan: free                     # Plan gratuit (base limitée à 1 Go, expire après 30 jours)
     ipAllowList: []             # [] = accès privé uniquement depuis les services Render
