@@ -1,86 +1,151 @@
+# =============================================================================
 # Render Blueprint — Vision Board App
+# =============================================================================
 # Documentation : https://render.com/docs/infrastructure-as-code
-# Ce fichier déclare l'infrastructure de production/staging pour le backend,
-# la base PostgreSQL et le frontend statique.
+#
+# Ce fichier est lu par Render lors de la création d'une "Blueprint Instance".
+# Il décrit l'ensemble de l'infrastructure déployée :
+#   - une base PostgreSQL managée,
+#   - le backend Node.js / Express / Prisma,
+#   - le frontend React / Vite (site statique).
+#
+# Pour provisionner : Dashboard Render > New > Blueprint > sélectionner ce repo.
+# =============================================================================
 
+# -----------------------------------------------------------------------------
+# SERVICES (tout sauf les bases PostgreSQL)
+# -----------------------------------------------------------------------------
 services:
   # ---------------------------------------------------------------------------
-  # Backend API (Node.js / Express / Prisma)
+  # 1. Backend API (Node.js / Express / Prisma)
+  # ---------------------------------------------------------------------------
+  # Ce service exécute l'API REST utilisée par le frontend web et l'application
+  # mobile. Il est lié à la base PostgreSQL déclarée plus bas.
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-api
-    runtime: node
-    region: frankfurt            # Change en "oregon" / "singapore" si besoin
-    plan: starter                # "free" possible pour tester (spin-down après 15 min)
-    branch: main
-    rootDir: backend
+    runtime: node                 # Runtime Node.js natif de Render (pas de Dockerfile)
+    region: frankfurt             # Région d'hébergement (oregon, singapore, frankfurt...)
+    plan: starter                 # Plan facturant sans spin-down. Mettre "free" pour tester.
+    branch: main                  # Branche déployée
+    rootDir: backend              # Dossier contenant le package.json du backend
+
+    # Commande exécutée à chaque déploiement pour builder le service.
+    # "npm ci" garantit une installation reproductible depuis package-lock.json.
+    # "npx prisma generate" génère le client Prisma nécessaire au runtime.
     buildCommand: npm ci && npx prisma generate
+
+    # Commande exécutée après le build mais avant le démarrage du service.
+    # Elle applique les migrations Prisma sur la base de données.
+    # Important : ne JAMAIS utiliser "prisma db push" ici (risque de perte de données).
     preDeployCommand: npx prisma migrate deploy
+
+    # Commande de démarrage du serveur Express.
     startCommand: node index.js
+
+    # Render vérifie que ce endpoint répond avec un 2xx avant de router le trafic.
     healthCheckPath: /api/health
-    autoDeployTrigger: 'off'     # Déclenchement manuel via hook GitHub Actions
+
+    # Désactive l'auto-deploy natif de Render : seuls les deploy hooks GitHub Actions
+    # déclencheront un déploiement, garantissant que la CI est passée au préalable.
+    autoDeployTrigger: 'off'
+
     envVars:
+      # Mode production pour Express (influence la gestion d'erreurs, le CORS, etc.)
       - key: NODE_ENV
         value: production
-      # Le port est injecté automatiquement par Render.
-      # Base de données provisionnée ci-dessous.
+
+      # Render injecte automatiquement une variable PORT ; le backend l'écoute
+      # via process.env.PORT (cf. backend/index.js).
+
+      # Connexion à la base PostgreSQL provisionnée dans la section "databases".
+      # Render remplace automatiquement cette valeur par l'URL interne de la base.
       - key: DATABASE_URL
         fromDatabase:
           name: visionboard-db
           property: connectionString
-      # Secrets applicatifs — définir dans le dashboard Render après le premier déploiement.
+
+      # -----------------------------------------------------------------------
+      # Secrets applicatifs
+      # -----------------------------------------------------------------------
+      # "sync: false" signifie que la valeur n'est pas stockée dans ce fichier.
+      # Elle doit être renseignée manuellement dans le dashboard Render après la
+      # première création du service. Cela évite de committer des secrets.
+      # -----------------------------------------------------------------------
       - key: JWT_SECRET
-        sync: false
+        sync: false                 # Clé secrète utilisée pour signer les JWT
       - key: JWT_EXPIRES_IN
-        value: 7d
+        value: 7d                   # Durée de validité des tokens JWT
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        sync: false                 # Nom du cloud Cloudinary (upload d'images)
       - key: CLOUDINARY_API_KEY
-        sync: false
+        sync: false                 # Clé API Cloudinary
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        sync: false                 # Secret API Cloudinary
       - key: UNSPLASH_ACCESS_KEY
-        sync: false
+        sync: false                 # Clé API Unsplash (recherche d'images)
       - key: GROQ_API_KEY
-        sync: false
+        sync: false                 # Clé API Groq (suggestions d'étapes par IA)
       - key: SMTP_HOST
-        sync: false
+        sync: false                 # Serveur SMTP pour les notifications/rappels
       - key: SMTP_PORT
-        sync: false
+        sync: false                 # Port SMTP
       - key: SMTP_USER
-        sync: false
+        sync: false                 # Utilisateur SMTP
       - key: SMTP_PASS
-        sync: false
+        sync: false                 # Mot de passe SMTP
 
   # ---------------------------------------------------------------------------
-  # Frontend web (React + Vite, build statique)
+  # 2. Frontend web (React + Vite, site statique)
+  # ---------------------------------------------------------------------------
+  # Ce service build le frontend et publie le contenu du dossier ./dist.
+  # Le routing React Router est supporté via la règle de rewrite ci-dessous.
   # ---------------------------------------------------------------------------
   - type: web
     name: visionboard-frontend
-    runtime: static
-    region: frankfurt
-    plan: starter
+    runtime: static               # Site statique (HTML/JS/CSS produits par Vite)
+    region: frankfurt             # Même région que le backend pour réduire la latence
+    plan: starter                 # Plan facturant. Mettre "free" pour tester.
     branch: main
-    rootDir: frontend
+    rootDir: frontend             # Dossier contenant le package.json du frontend
+
+    # Build Vite : npm ci assure la reproductibilité, "npm run build" génère ./dist
     buildCommand: npm ci && npm run build
+
+    # Dossier publié par Render (sortie par défaut de Vite)
     staticPublishPath: ./dist
+
+    # Désactive l'auto-deploy natif pour laisser GitHub Actions contrôler.
     autoDeployTrigger: 'off'
+
+    # Redirige toutes les routes vers index.html : nécessaire pour le routing
+    # côté client (React Router) quand on rafraîchit une page comme /goals/123.
     routes:
       - type: rewrite
         source: /*
         destination: /index.html
+
     envVars:
       - key: NODE_ENV
         value: production
-      # URL complète du backend + /api, par exemple :
-      # https://visionboard-api-xxx.onrender.com/api
-      # À définir manuellement dans le dashboard Render après le premier déploiement backend.
+
+      # URL complète de l'API backend, y compris le suffixe /api.
+      # Exemple : https://visionboard-api-xxx.onrender.com/api
+      # Cette valeur doit être définie manuellement dans le dashboard Render
+      # après le premier déploiement du backend (l'URL n'est connue qu'après).
       - key: VITE_API_URL
         sync: false
 
+# -----------------------------------------------------------------------------
+# BASES DE DONNÉES POSTGRESQL
+# -----------------------------------------------------------------------------
+# Cette section est réservée aux bases PostgreSQL managées par Render.
+# L'ipAllowList vide signifie que seuls les services Render du même compte
+# peuvent se connecter ; la base n'est pas exposée publiquement.
+# -----------------------------------------------------------------------------
 databases:
   - name: visionboard-db
     databaseName: visionboard
     user: visionboard_user
-    plan: basic-1gb              # "free" possible pour tester (30 jours puis passage payant)
-    ipAllowList: []             # Autorise uniquement les services Render par défaut
+    plan: basic-1gb               # Plan facturant. "free" disponible 30 jours pour tester.
+    ipAllowList: []             # [] = accès privé uniquement depuis les services Render

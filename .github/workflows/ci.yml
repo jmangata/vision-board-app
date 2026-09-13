@@ -1,5 +1,18 @@
 name: CI
 
+# =============================================================================
+# Déclencheurs du workflow CI
+# =============================================================================
+# - push sur toutes les branches SAUF main : vérifie chaque commit poussé
+#   sur une branche de fonctionnalité.
+# - pull_request vers main : vérifie chaque PR avant merge.
+# - workflow_call : permet au workflow CD (.github/workflows/cd.yml) de
+#   réutiliser ce fichier. Cela évite de dupliquer les jobs de vérification.
+#
+# La branche main est volontairement ignorée ici car le workflow CD
+# appelle cette CI une seule fois, puis déploie. Sans cela, la CI serait
+# lancée deux fois à chaque push sur main.
+# =============================================================================
 on:
   push:
     branches-ignore: [main]
