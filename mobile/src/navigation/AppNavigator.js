@@ -13,6 +13,7 @@ import BadgesScreen from '../screens/BadgesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GoalDetailScreen from '../screens/GoalDetailScreen';
 import CreateGoalScreen from '../screens/CreateGoalScreen';
+import SlideshowScreen from '../screens/SlideshowScreen';
 import { useAuth } from '../context/AuthContext';
 
 // Instances des navigateurs : pile pour l'ensemble de l'app, onglets pour les écrans principaux.
@@ -36,6 +37,7 @@ function MainTabs() {
             Dashboard: 'auto-graph',
             Badges: 'military-tech',
             Profile: 'person',
+            Presentation: 'slideshow',
           };
           return <MaterialIcons name={icons[route.name]} size={23} color={color} />;
         },
@@ -49,6 +51,7 @@ function MainTabs() {
       <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Stats' }} />
       <Tab.Screen name="Badges" component={BadgesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profil' }} />
+      <Tab.Screen name="Presentation" component={SlideshowScreen} options={{ title: 'Diapo' }} />
     </Tab.Navigator>
   );
 }
@@ -74,6 +77,7 @@ export default function AppNavigator() {
             <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
             <Stack.Screen name="GoalDetail" component={GoalDetailScreen} options={{ title: "Détail de l'objectif" }} />
             <Stack.Screen name="CreateGoal" component={CreateGoalScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Slideshow" component={SlideshowScreen} options={{ headerShown: false }} />
           </>
         )}
       </Stack.Navigator>

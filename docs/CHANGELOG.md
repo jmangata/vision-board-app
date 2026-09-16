@@ -1,5 +1,30 @@
 # Changelog — Fonctionnalités
 
+## Présentation de projet éditable
+
+### Contexte
+L'application devait permettre de préparer une présentation personnalisée du projet pour une soutenance, avec les mêmes données disponibles sur le web et sur mobile.
+
+### Comportement attendu
+Un utilisateur connecté peut saisir le titre, l'introduction, le contenu, l'image et la durée de chaque diapositive, puis consulter la présentation écran par écran dans les deux clients.
+
+### Cause / motivation
+La préparation de la soutenance nécessitait un support de présentation intégré au projet, sans dépendre de données codées en dur ni d'un outil externe pour synchroniser les contenus.
+
+### Solution
+- Ajout des modèles Prisma `Slideshow` et `Slide`, liés à l'utilisateur et ordonnés.
+- Ajout des endpoints protégés `GET /api/slideshow` et `PUT /api/slideshow`.
+- Ajout de l'éditeur et du mode présentation web sur `/presentation`.
+- Ajout de la consultation mobile via l'écran `Slideshow`.
+
+### Vérification
+- Exécuter `npx prisma db push` depuis `backend`.
+- Vérifier la création, l'enregistrement et l'affichage de plusieurs diapositives depuis le web.
+- Se connecter sur mobile et vérifier la navigation précédente/suivante.
+
+### Points de vigilance
+Les images sont saisies sous forme d'URL ; elles doivent rester accessibles depuis le navigateur et le téléphone.
+
 ## Alignement des barres supérieures Expo sur le responsive
 
 ### Contexte
