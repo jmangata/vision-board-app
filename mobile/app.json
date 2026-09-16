@@ -1,8 +1,11 @@
- {
+{
   "expo": {
     "name": "Vision Board",
     "slug": "vision-board-mobile",
     "version": "1.0.0",
-    "orientation": "portrait"
+    "orientation": "portrait",
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

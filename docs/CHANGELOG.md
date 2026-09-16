@@ -1,5 +1,362 @@
 # Changelog — Fonctionnalités
 
+## Alignement des barres supérieures Expo sur le responsive
+
+### Contexte
+Les barres inférieure et supérieures doivent reproduire les dimensions, icônes et typographies du frontend responsive.
+
+### Comportement incorrect
+La page Objectifs utilisait encore des icônes Ionicons et le détail affichait les textes `Retour` et `Suppr` au lieu des boutons Material du web. La police native différait également d’Inter.
+
+### Cause
+Les premières implémentations Expo utilisaient les composants et polices système par défaut plutôt que les références exactes du frontend.
+
+### Solution
+- Chargement des graisses Inter utilisées par le frontend depuis le point d’entrée Expo.
+- Application d’Inter aux titres des en-têtes et aux libellés de la navigation inférieure.
+- Remplacement du menu et de l’ajout de la page Objectifs par les icônes Material correspondantes.
+- Alignement du détail sur un en-tête de contenu de 64 px avec boutons de 40 px, flèche retour et corbeille.
+- Conservation de la zone sûre iOS au-dessus des hauteurs de contenu afin d’éviter les chevauchements système.
+
+### Fichiers concernés
+- `mobile/App.js`
+- `mobile/src/navigation/AppNavigator.js`
+- `mobile/src/screens/BoardScreen.js`
+- `mobile/src/screens/CreateGoalScreen.js`
+- `mobile/src/screens/GoalDetailScreen.js`
+- `mobile/package.json`
+- `mobile/package-lock.json`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- Bundle iOS Expo généré avec succès, polices Inter et Material Icons incluses.
+- `git diff --check` sans erreur bloquante.
+
+### Points de vigilance
+Les zones sûres iOS et Android s’ajoutent à la hauteur visuelle des en-têtes, mais leur zone de contenu conserve exactement la hauteur définie par le responsive web.
+
+---
+
+## Alignement de la création d’objectif Expo sur le responsive web
+
+### Contexte
+Le formulaire Expo utilisait encore une composition différente du formulaire responsive web alors que les deux interfaces doivent présenter la même expérience.
+
+### Comportement incorrect
+L’ordre des sections, l’en-tête, les cartes de catégories, la sélection d’image et les dimensions des boutons différaient du responsive. L’import depuis la photothèque n’était pas disponible sur mobile.
+
+### Cause
+Le premier écran Expo avait été construit à partir d’une maquette mobile distincte plutôt qu’à partir de la structure actuelle du frontend responsive.
+
+### Solution
+- Reproduction de l’en-tête de 80 px et du bouton de fermeture Material.
+- Alignement exact de l’ordre : titre, description, catégories, image, date, erreur, suggestions et création.
+- Champs principaux de 80 px et sections espacées de 32 px.
+- Cartes de catégories sur deux colonnes avec icônes Material et sélection bordée.
+- Conservation de la catégorie Autre et de la réutilisation insensible à la casse.
+- Ajout de l’import depuis la photothèque avec Expo Image Picker et upload Cloudinary.
+- Reproduction du panneau Unsplash, de l’aperçu 16:9 et de la suppression d’image.
+- Boutons Suggestions et Création de même hauteur, largeur et rayon que sur le web.
+- Correction du paramètre de navigation vers le détail après création.
+- Ajout de commentaires fonctionnels dans le code mobile.
+
+### Fichiers concernés
+- `mobile/src/screens/CreateGoalScreen.js`
+- `mobile/src/services/goalService.js`
+- `mobile/package.json`
+- `mobile/package-lock.json`
+- `mobile/app.json`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- Bundle iOS Expo généré avec succès.
+- `git diff --check` sans erreur bloquante.
+- `expo-doctor` a uniquement rencontré une indisponibilité réseau TLS pendant son contrôle distant ; aucun problème de bundle local n’a été relevé.
+
+### Points de vigilance
+- L’accès à la photothèque doit être accepté par l’utilisateur.
+- L’upload nécessite les variables Cloudinary du backend et une API accessible depuis le téléphone.
+- La date conserve le format `AAAA-MM-JJ`, React Native ne proposant pas le champ HTML natif `type=date`.
+
+---
+
+## Stabilisation des onglets Expo après authentification
+
+### Contexte
+Après une inscription réussie, l’application doit pouvoir monter l’ensemble de la navigation authentifiée avant d’afficher la page Objectifs.
+
+### Comportement incorrect
+React Navigation interrompait le rendu avec une erreur indiquant que le composant Dashboard était invalide.
+
+### Cause
+Les fichiers des écrans Statistiques, Badges et Profil étaient encore vides, alors qu’ils étaient déjà déclarés comme composants des onglets.
+
+### Solution
+Ajout de composants transitoires valides, commentés et visuellement cohérents dans les trois fichiers. Leur contenu fonctionnel sera remplacé progressivement pendant les étapes prévues du plan.
+
+### Fichiers concernés
+- `mobile/src/screens/DashboardScreen.js`
+- `mobile/src/screens/BadgesScreen.js`
+- `mobile/src/screens/ProfileScreen.js`
+- `docs/CHANGELOG.md`
+- `docs/TROUBLESHOOTING.md`
+
+### Vérification
+- Bundle iOS Expo généré avec succès.
+- `git diff --check` sans erreur bloquante.
+
+### Points de vigilance
+Ces trois écrans sont volontairement transitoires : ils corrigent le démarrage sans anticiper leur future implémentation métier.
+
+---
+
+## Message explicite pour une adresse email déjà utilisée
+
+### Contexte
+Lors d’une inscription web ou mobile, l’utilisateur doit comprendre immédiatement pourquoi un compte ne peut pas être créé avec une adresse existante.
+
+### Comportement incorrect
+Le backend renvoyait un message anglais et une création simultanée pouvait encore produire une erreur technique liée à la contrainte unique.
+
+### Cause
+Le contrôle préalable et la gestion de l’erreur Prisma n’utilisaient pas le même message fonctionnel destiné aux interfaces.
+
+### Solution
+- Recherche insensible à la casse avant la création du compte.
+- Réponse HTTP 409 avec le message `Cette adresse email est déjà utilisée.`.
+- Gestion de la contrainte Prisma `P2002` pour couvrir deux inscriptions simultanées.
+- Réutilisation automatique du message backend par les formulaires web et Expo.
+
+### Fichiers concernés
+- `backend/src/controllers/authController.js`
+- `docs/CHANGELOG.md`
+
+### Vérification
+1. Créer un compte avec une adresse valide.
+2. Recommencer avec la même adresse, y compris avec une casse différente.
+3. Vérifier que le formulaire affiche `Cette adresse email est déjà utilisée.` sans créer de doublon.
+
+### Points de vigilance
+La base conserve sa contrainte unique comme protection définitive ; le contrôle préalable sert uniquement à fournir un retour plus rapide et plus lisible.
+
+---
+
+## Validation renforcée de l’inscription web et Expo
+
+### Contexte
+Un essai d’inscription depuis Expo restait indéfiniment en chargement et les formulaires n’expliquaient pas suffisamment les formats attendus.
+
+### Comportement incorrect
+- Une API mobile inaccessible ne rendait la main qu’après un délai réseau non maîtrisé.
+- Une adresse email incorrecte pouvait être envoyée sans message local précis.
+- Aucun indicateur n’expliquait la robustesse attendue du mot de passe.
+- Le frontend web conservait les erreurs d’inscription en état sans les afficher.
+
+### Cause
+Le client Axios mobile n’avait aucun délai maximal, son adresse locale ne correspondait plus au réseau actif et les règles d’inscription n’étaient pas centralement imposées par le backend.
+
+### Solution
+- Ajout d’un délai maximal de 10 secondes et de `EXPO_PUBLIC_API_URL` pour configurer l’API mobile.
+- Mise à jour de l’adresse locale de secours avec l’adresse détectée par Metro.
+- Validation de l’email avant soumission sur web, mobile et backend.
+- Exigence d’un mot de passe comportant au moins 12 caractères, une lettre, un chiffre et un caractère spécial.
+- Affichage dynamique et intuitif de chaque règle du mot de passe.
+- Ajout de messages réseau distincts pour un délai dépassé et une API inaccessible.
+- Normalisation des emails en minuscules avant leur enregistrement.
+
+### Fichiers concernés
+- `backend/src/controllers/authController.js`
+- `frontend/src/pages/Register.jsx`
+- `mobile/src/services/api.js`
+- `mobile/src/screens/RegisterScreen.js`
+- `docs/CHANGELOG.md`
+- `docs/TROUBLESHOOTING.md`
+
+### Vérification
+- Vérifier une adresse sans domaine : le formulaire doit signaler le format incorrect.
+- Vérifier que chaque règle du mot de passe passe visuellement à l’état valide.
+- Vérifier que le backend refuse également les données invalides, même sans passer par l’interface.
+- Arrêter le backend et soumettre : le chargement doit s’arrêter avec un message explicite après 10 secondes maximum.
+
+### Points de vigilance
+- Les comptes existants restent utilisables : les nouvelles règles ne sont appliquées qu’à l’inscription.
+- L’adresse IP locale peut changer ; privilégier `EXPO_PUBLIC_API_URL` plutôt que modifier le code à chaque changement de réseau.
+
+---
+
+## Documentation fonctionnelle des écrans Expo modifiés
+
+### Contexte
+Les fichiers mobiles récemment harmonisés devaient rester compréhensibles et maintenables pendant la suite de la migration responsive.
+
+### Comportement incorrect
+Plusieurs composants et effets importants ne précisaient pas leur rôle, notamment le filtrage des catégories, le rechargement des objectifs et la préparation du message de bienvenue.
+
+### Cause
+Les premières implémentations avaient privilégié la mise en place fonctionnelle et visuelle avant la documentation interne du code.
+
+### Solution
+Ajout de commentaires ciblés au niveau des composants, états, effets et fonctions métier, sans commenter mécaniquement chaque ligne ni modifier le comportement de l’application.
+
+### Fichiers concernés
+- `mobile/src/navigation/AppNavigator.js`
+- `mobile/src/screens/LoginScreen.js`
+- `mobile/src/screens/RegisterScreen.js`
+- `mobile/src/screens/BoardScreen.js`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- `npx expo export --platform android --output-dir dist-check` : bundle Android généré avec succès.
+- `git diff --check` : aucune erreur de formatage bloquante.
+
+### Points de vigilance
+- Les commentaires doivent expliquer l’intention et les contraintes, pas répéter littéralement le code.
+- La même convention sera appliquée aux prochains écrans au moment de leur harmonisation.
+
+---
+
+## Harmonisation de la page Objectifs Expo
+
+### Contexte
+La page principale Expo devait reprendre la structure, les filtres et les cartes de la page Objectifs web responsive.
+
+### Comportement incorrect
+L’écran mobile initial était vide. Il ne permettait pas d’afficher, filtrer ou ouvrir les objectifs existants, ni de mettre à jour rapidement leurs étapes.
+
+### Cause
+Aucune interface mobile complète n’était raccordée aux endpoints des objectifs et des catégories.
+
+### Solution
+- Ajout de l’en-tête mobile, du bouton de création et du message de bienvenue.
+- Ajout des filtres Tout, Sport, Musique, Voyage, Finance, Lecture et Autre.
+- Reproduction de la grille responsive avec un premier objectif mis en avant.
+- Ajout des images, catégories, progressions et listes d’étapes dépliables.
+- Activation de la validation rapide d’une étape depuis une carte.
+- Rechargement automatique des objectifs lorsque l’écran reprend le focus.
+- Remplacement des symboles textuels par les icônes natives Ionicons.
+- Préparation du message de bienvenue après connexion ou inscription mobile.
+
+### Fichiers concernés
+- `mobile/src/screens/BoardScreen.js`
+- `mobile/src/screens/LoginScreen.js`
+- `mobile/src/screens/RegisterScreen.js`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- `npx expo export --platform android --output-dir dist-check` : bundle Android généré avec succès.
+- Cohérence contrôlée entre le paramètre de navigation de la carte et celui attendu par le détail.
+- `git diff --check` : aucune erreur de formatage bloquante.
+
+### Points de vigilance
+- Le chargement des données nécessite que l’appareil puisse joindre le backend configuré dans `mobile/src/services/api.js`.
+- La validation visuelle des cartes, filtres et états vides doit être confirmée sur Expo Go avec des données réelles.
+
+---
+
+## Harmonisation des formulaires Expo de connexion et d’inscription
+
+### Contexte
+L’application Expo devait reproduire les formulaires d’authentification de la version web responsive et proposer l’inscription directement depuis le mobile.
+
+### Comportement incorrect
+La connexion mobile utilisait une présentation minimale, sans état de chargement ni accès à l’inscription, et aucun écran d’inscription Expo n’était disponible.
+
+### Cause
+Seul l’écran de connexion initial avait été raccordé au navigateur mobile, malgré la présence de l’appel API d’inscription dans le service d’authentification.
+
+### Solution
+- Alignement de la connexion sur la carte, la palette, le logo, les champs et le bouton du responsive web.
+- Ajout de la gestion du clavier, des champs obligatoires, du chargement et des erreurs API.
+- Création du formulaire d’inscription avec prénom, email et mot de passe.
+- Ajout des liens réciproques Connexion et Inscription dans la navigation non authentifiée.
+- Connexion automatique de l’utilisateur après une authentification ou une inscription réussie.
+
+### Fichiers concernés
+- `mobile/src/screens/LoginScreen.js`
+- `mobile/src/screens/RegisterScreen.js`
+- `mobile/src/navigation/AppNavigator.js`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- `npx expo export --platform android --output-dir dist-check` : bundle Android généré avec succès.
+- `git diff --check` : aucune erreur de formatage bloquante.
+- La dernière exécution d’`expo-doctor` a rencontré une erreur réseau TLS sur le contrôle distant de la configuration ; l’exécution précédente avait validé 21 contrôles sur 21.
+
+### Points de vigilance
+- La connexion et l’inscription métier nécessitent que le téléphone puisse atteindre l’URL du backend configurée dans `mobile/src/services/api.js`.
+- La recette visuelle et les deux soumissions doivent être confirmées dans Expo Go sur un appareil.
+
+---
+
+## Harmonisation de la navigation inférieure Expo
+
+### Contexte
+La navigation Expo utilisait l’apparence par défaut de React Navigation et ne correspondait pas à la barre inférieure du frontend responsive.
+
+### Comportement incorrect
+Les onglets n’avaient pas d’icônes explicites, de palette cohérente avec le web ni de dimensions adaptées à l’identité visuelle de l’application.
+
+### Cause
+Aucune configuration visuelle commune n’était fournie au navigateur d’onglets mobile.
+
+### Solution
+- Application exacte de la hauteur de 80 px, des couleurs, espacements et tailles typographiques du responsive.
+- Ajout des icônes Material identiques au responsive web pour Board, Stats, Badges et Profil.
+- Utilisation des libellés mobiles `Board`, `Stats`, `Badges` et `Profil` à la place des libellés desktop.
+- Ajout des dépendances Expo Vector Icons et Expo Font compatibles avec le SDK 57.
+- Masquage automatique de la barre lorsque le clavier est ouvert.
+
+### Fichiers concernés
+- `mobile/src/navigation/AppNavigator.js`
+- `mobile/package.json`
+- `mobile/package-lock.json`
+- `mobile/app.json`
+- `docs/CHANGELOG.md`
+
+### Vérification
+- `npx expo-doctor` : 21 contrôles sur 21 réussis.
+- `npx expo export --platform android --output-dir dist-check` : bundle Android généré avec les polices d’icônes.
+- `git diff --check` : aucune erreur de formatage bloquante.
+
+### Points de vigilance
+- Expo Font est déclaré comme plugin afin que les polices soient disponibles dans les builds natifs.
+- La validation visuelle finale doit être effectuée sur un appareil ou un émulateur Android/iOS.
+
+---
+
+## Stabilisation de l’environnement Expo avant harmonisation responsive
+
+### Contexte
+L’harmonisation progressive de l’application Expo avec le frontend responsive nécessite un environnement mobile reproductible et vérifiable avant chaque évolution d’écran.
+
+### Comportement incorrect
+Le projet mobile pouvait être installé, mais Expo signalait des dépendances natives obligatoires absentes et plusieurs versions incompatibles avec le SDK 57.
+
+### Cause
+`react` et `react-native` n’étaient pas déclarés directement, tandis qu’Expo, Expo Notifications et AsyncStorage ne correspondaient pas aux versions attendues par le SDK installé.
+
+### Solution
+- Ajout explicite de `react` et `react-native` avec les versions compatibles Expo.
+- Alignement d’Expo, Expo Notifications et AsyncStorage sur les versions recommandées pour le SDK 57.
+- Création d’un état de référence avant de poursuivre l’harmonisation écran par écran.
+
+### Fichiers concernés
+- `mobile/package.json`
+- `mobile/package-lock.json`
+- `docs/CHANGELOG.md`
+- `docs/TROUBLESHOOTING.md`
+
+### Vérification
+- `npx expo-doctor` : 21 contrôles sur 21 réussis.
+- `npx expo export --platform android --output-dir dist-check` : bundle Android généré avec succès.
+- `npm ls --depth=0` : dépendances principales installées et résolues.
+
+### Points de vigilance
+- Les alertes `npm audit` restantes proviennent de l’arbre de dépendances et doivent être analysées sans utiliser `npm audit fix --force` afin d’éviter une mise à niveau incompatible.
+- Le `projectId` EAS nécessaire aux notifications push reste à configurer séparément.
+
+---
+
 ## Mise en place du déploiement continu (CD) sur Render
 
 ### Contexte

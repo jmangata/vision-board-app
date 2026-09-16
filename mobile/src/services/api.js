@@ -5,7 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Instance Axios configurée avec l'adresse du backend local.
 const api = axios.create({
-  baseURL: 'http://192.168.50.205:5000/api',
+  baseURL: process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.15:5000/api',
+  timeout: 10000,
 });
 
 // Intercepteur requête : lit le token stocké et l'ajoute sous forme d'en-tête Bearer

@@ -6,6 +6,10 @@ import bcrypt from 'bcrypt';       // Importe bcrypt pour hacher les mots de pas
 import jwt from 'jsonwebtoken';   // Importe JWT pour générer des tokens d'authentification
 import { prisma } from '../prisma.js'; // Importe l'instance Prisma pour accéder à la base de données
 
+// Règles partagées par toutes les interfaces lors de la création d'un compte.
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{12,}$/;
+
 // Calcule le nombre de jours de streak à partir de la dernière connexion
 function computeStreakUpdate(lastLoginAt, currentStreakDays) {
   const now = new Date();
@@ -37,13 +41,22 @@ export const register = async (req, res) => {
 
     // Vérifie que tous les champs requis sont présents
     if (!email || !password || !firstname) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({ message: 'Tous les champs sont obligatoires.' });
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!emailPattern.test(normalizedEmail)) {
+      return res.status(400).json({ message: "L'adresse email n'est pas valide." });
+    }
+    if (!passwordPattern.test(password)) {
+      return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 12 caractères, une lettre, un chiffre et un caractère spécial.' });
     }
 
     // Vérifie si un utilisateur avec cet email existe déjà en base
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+    });
     if (existing) {
-      return res.status(409).json({ message: 'Email already in use' }); // 409 = Conflict
+      return res.status(409).json({ message: 'Cette adresse email est déjà utilisée.' }); // 409 = Conflict
     }
 
     // Hache le mot de passe avec bcrypt (10 rounds de salt)
@@ -51,7 +64,7 @@ export const register = async (req, res) => {
 
     // Crée l'utilisateur en base avec le mot de passe haché
     const user = await prisma.user.create({
-      data: { email, passwordHash, firstname, streakDays: 1, lastLoginAt: new Date() },
+      data: { email: normalizedEmail, passwordHash, firstname: firstname.trim(), streakDays: 1, lastLoginAt: new Date() },
     });
 
     // Génère un token JWT contenant l'ID de l'utilisateur, signé avec le secret du .env
@@ -67,7 +80,10 @@ export const register = async (req, res) => {
       user: { id: user.id, email: user.email, firstname: user.firstname },
     });
   } catch (err) {
-    // En cas d'erreur interne, renvoie un message d'erreur 500
+    // La contrainte unique protège aussi contre deux inscriptions simultanées.
+    if (err.code === 'P2002' && err.meta?.target?.includes('email')) {
+      return res.status(409).json({ message: 'Cette adresse email est déjà utilisée.' });
+    }
     res.status(500).json({ message: err.message });
   }
 };

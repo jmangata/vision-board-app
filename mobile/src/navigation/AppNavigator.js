@@ -3,8 +3,10 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import LoginScreen from '../screens/LoginScreen';
+import RegisterScreen from '../screens/RegisterScreen';
 import BoardScreen from '../screens/BoardScreen';
 import DashboardScreen from '../screens/DashboardScreen';
 import BadgesScreen from '../screens/BadgesScreen';
@@ -21,9 +23,30 @@ const Tab = createBottomTabNavigator();
 // Chaque onglet donne accès à un domaine fonctionnel de l'application.
 function MainTabs() {
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Board" component={BoardScreen} options={{ title: 'Objectifs' }} />
-      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Statistiques' }} />
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarActiveTintColor: '#0D3F7E',
+        tabBarInactiveTintColor: '#737781',
+        tabBarHideOnKeyboard: true,
+        tabBarIcon: ({ color }) => {
+          // Reprend les quatre Material Symbols utilisés par la navigation web responsive.
+          const icons = {
+            Board: 'grid-view',
+            Dashboard: 'auto-graph',
+            Badges: 'military-tech',
+            Profile: 'person',
+          };
+          return <MaterialIcons name={icons[route.name]} size={23} color={color} />;
+        },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_500Medium', marginTop: 1, marginBottom: 4 },
+        tabBarIconStyle: { marginTop: 4 },
+        tabBarItemStyle: { minWidth: 56 },
+        tabBarStyle: { height: 80, paddingHorizontal: 20, paddingTop: 4, paddingBottom: 4, backgroundColor: '#FFFFFF', borderTopColor: 'rgba(226,226,232,0.3)' },
+      })}
+    >
+      <Tab.Screen name="Board" component={BoardScreen} options={{ title: 'Board' }} />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Stats' }} />
       <Tab.Screen name="Badges" component={BadgesScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} options={{ title: 'Profil' }} />
     </Tab.Navigator>
@@ -41,7 +64,10 @@ export default function AppNavigator() {
       <Stack.Navigator>
         {/* Si aucun token n'est disponible, on affiche l'écran de connexion. */}
         {!token ? (
-          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Group screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Register" component={RegisterScreen} />
+          </Stack.Group>
         ) : (
           <>
             {/* En mode connecté : onglets principaux et écrans secondaires empilés au-dessus. */}

@@ -4,12 +4,29 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { prepareWelcome, register } from '../services/authService.js';
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const passwordRules = [
+  { label: '12 caractères minimum', valid: (value) => value.length >= 12 },
+  { label: 'Une lettre', valid: (value) => /[A-Za-z]/.test(value) },
+  { label: 'Un chiffre', valid: (value) => /\d/.test(value) },
+  { label: 'Un caractère spécial', valid: (value) => /[^A-Za-z\d\s]/.test(value) },
+];
+
 function Register() {
   const [form, setForm] = useState({ email: '', password: '', firstname: '' });
   const [error, setError] = useState('');
   // Enregistre l'utilisateur, persiste le token et recharge la session.
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!emailPattern.test(form.email.trim())) {
+      setError("L'adresse email n'est pas valide. Exemple : nom@domaine.fr");
+      return;
+    }
+    if (!passwordRules.every((rule) => rule.valid(form.password))) {
+      setError('Le mot de passe ne respecte pas encore toutes les règles indiquées.');
+      return;
+    }
+    setError('');
     try {
       const { data } = await register(form);
       localStorage.setItem('token', data.token);
@@ -31,6 +48,7 @@ function Register() {
       </div>
 
       <div className="w-full max-w-sm bg-surface-container-lowest p-6 rounded-xl shadow-card border border-surface-variant/30">
+        {error && <p className="mb-4 rounded-xl bg-error-container p-3 text-sm font-medium text-error">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="block text-sm font-semibold text-on-surface-variant mb-1 ml-1">Prénom</label>
@@ -50,8 +68,10 @@ function Register() {
               className="input-field"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
+              aria-invalid={form.email.length > 0 && !emailPattern.test(form.email.trim())}
               required
             />
+            {form.email.length > 0 && !emailPattern.test(form.email.trim()) && <p className="ml-1 mt-1 text-xs text-error">Saisis une adresse valide, par exemple nom@domaine.fr.</p>}
           </div>
           <div>
             <label className="block text-sm font-semibold text-on-surface-variant mb-1 ml-1">Mot de passe</label>
@@ -63,6 +83,12 @@ function Register() {
               onChange={(e) => setForm({ ...form, password: e.target.value })}
               required
             />
+            <ul className="mt-2 space-y-1 px-1">
+              {passwordRules.map((rule) => {
+                const valid = rule.valid(form.password);
+                return <li key={rule.label} className={`text-xs ${valid ? 'font-semibold text-secondary' : 'text-outline'}`}>{valid ? '✓' : '○'} {rule.label}</li>;
+              })}
+            </ul>
           </div>
 
           <button className="w-full h-14 bg-primary-container text-white font-semibold rounded-full shadow-lg shadow-primary-container/20 pill-button flex items-center justify-center gap-2">

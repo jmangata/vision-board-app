@@ -1,5 +1,81 @@
 ---
 
+### 21. React Navigation refuse le composant Dashboard
+
+### Contexte
+Après une inscription réussie, React Navigation tentait de monter les quatre onglets de l’espace authentifié.
+
+### Erreur constatée
+```text
+Got an invalid value for 'component' prop for the screen 'Dashboard'. It must be a valid React Component.
+```
+
+### Cause
+`DashboardScreen.js`, `BadgesScreen.js` et `ProfileScreen.js` étaient des fichiers vides. Leurs imports retournaient donc une valeur invalide au navigateur.
+
+### Solution
+Ajouter un composant React Native exporté par défaut dans chacun des trois fichiers. Des écrans transitoires documentés sont utilisés jusqu’à leur harmonisation fonctionnelle complète.
+
+### Vérification
+`npx expo export --platform ios --output-dir dist-check` génère désormais le bundle iOS sans erreur de composant React Navigation.
+
+### Points de vigilance
+Un écran référencé par la propriété `component` d’un `Stack.Screen` ou d’un `Tab.Screen` doit toujours exporter un composant React valide, même avant son implémentation finale.
+
+---
+
+### 20. Inscription Expo bloquée sur le chargement
+
+### Contexte
+Le formulaire d’inscription mobile restait en chargement lorsqu’Expo Go ne parvenait pas à joindre le backend local.
+
+### Erreur constatée
+Aucune réponse ni erreur visible n’apparaissait rapidement après la soumission.
+
+### Cause
+Le client Axios n’avait pas de délai maximal et utilisait une ancienne adresse IP locale ne correspondant plus à celle annoncée par Metro.
+
+### Solution
+- Configurer l’API avec `EXPO_PUBLIC_API_URL` ou utiliser l’adresse locale de secours actuelle.
+- Ajouter un délai Axios de 10 secondes.
+- Afficher un message dédié lorsque le serveur est inaccessible ou que le délai est dépassé.
+
+Exemple PowerShell avant `npm start` :
+```powershell
+$env:EXPO_PUBLIC_API_URL="http://192.168.1.15:5000/api"
+```
+
+### Vérification
+Lancer le backend sur le port 5000, démarrer Expo sur le même réseau Wi-Fi puis vérifier `http://ADRESSE_IP:5000/api/health` depuis le navigateur du téléphone.
+
+### Points de vigilance
+L’adresse IP locale peut changer après une reconnexion Wi-Fi. Une variable `EXPO_PUBLIC_*` est intégrée au bundle client et ne doit jamais contenir de secret.
+
+---
+
+### 19. Dépendances requises par Expo SDK 57
+
+### Contexte
+Après l’installation du dossier `mobile`, `expo-doctor` a été exécuté avant l’harmonisation des écrans avec le responsive web.
+
+### Erreur constatée
+Expo signalait l’absence des dépendances directes `react` et `react-native`, une régression Hermes sur une ancienne révision d’Expo et des versions incompatibles d’Expo Notifications et AsyncStorage.
+
+### Cause
+Le manifeste mobile ne déclarait pas les pairs React obligatoires et utilisait plusieurs versions ne correspondant pas à celles attendues par Expo SDK 57.
+
+### Solution
+Exécuter les installations via `npx expo install` afin d’utiliser les versions compatibles du SDK, notamment `react`, `react-native`, Expo, Expo Notifications et AsyncStorage.
+
+### Vérification
+- `npx expo-doctor` doit afficher `21/21 checks passed`.
+- `npx expo export --platform android` doit terminer la génération du bundle sans erreur Metro.
+
+### Points de vigilance
+Ne pas appliquer `npm audit fix --force` automatiquement : cette commande peut installer des versions majeures incompatibles avec le SDK Expo courant.
+
+---
+
 ### 18. Configuration locale des variables d'environnement
 
 ### Contexte
