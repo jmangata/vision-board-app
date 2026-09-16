@@ -22,9 +22,10 @@ model User {
   lastLoginAt  DateTime? @map("last_login_at")
   streakDays   Int       @default(1) @map("streak_days")
 
-  goals     Goal[]
-  reminders Reminder[]
-  badges    UserBadge[]
+  goals      Goal[]
+  reminders  Reminder[]
+  badges     UserBadge[]
+  slideshows Slideshow[]
 
   @@map("users")
 }
@@ -114,4 +115,34 @@ model UserBadge {
 
   @@unique([userId, badgeId])
   @@map("user_badges")
+}
+
+model Slideshow {
+  id          String   @id @default(uuid())
+  userId      String   @unique @map("user_id")
+  title       String
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  slides Slide[]
+
+  @@map("slideshows")
+}
+
+model Slide {
+  id          String   @id @default(uuid())
+  slideshowId String   @map("slideshow_id")
+  title       String
+  content     String?
+  imageUrl    String?  @map("image_url")
+  order       Int
+  duration    Int      @default(5)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  slideshow Slideshow @relation(fields: [slideshowId], references: [id], onDelete: Cascade)
+
+  @@index([slideshowId, order])
+  @@map("slides")
 }

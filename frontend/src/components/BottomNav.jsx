@@ -10,6 +10,7 @@ function BottomNav() {
     { path: '/dashboard', label: 'Stats', desktopLabel: 'Statistiques', icon: 'auto_graph' },
     { path: '/badges', label: 'Badges', desktopLabel: 'Badges', icon: 'military_tech' },
     { path: '/profile', label: 'Profil', desktopLabel: 'Profil', icon: 'person' },
+    { path: '/presentation', label: 'Diapo', desktopLabel: 'Présentation', icon: 'slideshow' },
   ];
 
   return (

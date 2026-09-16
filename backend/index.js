@@ -15,6 +15,7 @@ import userRoutes from './src/routes/userRoutes.js';
 import unsplashRoutes from './src/routes/unsplashRoutes.js';
 import uploadRoutes from './src/routes/uploadRoutes.js';
 import groqRoutes from './src/routes/groqRoutes.js';
+import slideshowRoutes from './src/routes/slideshowRoutes.js';
 import { startReminderJob } from './src/jobs/reminderJob.js';
 import { errorHandler } from './src/middlewares/errorMiddleware.js';
 
@@ -38,6 +39,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/unsplash', unsplashRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/groq', groqRoutes);
+app.use('/api/slideshow', slideshowRoutes);
 
 // Route de test : vérifie que le serveur répond
 app.get('/api/health', (req, res) => {
