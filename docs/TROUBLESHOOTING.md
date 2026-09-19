@@ -546,3 +546,41 @@ La migration `20260824162729_add_streak_fields` existait dans le dépôt mais n'
 ### Points de vigilance
 - Sous Windows, arrêter le backend avant `npx prisma generate` si `query_engine-windows.dll.node` est verrouillé avec une erreur `EPERM`.
 - Après chaque modification de `schema.prisma`, appliquer les migrations puis régénérer le client avant de relancer le serveur.
+
+---
+
+## Secrets exposés dans l'historique Git
+
+### Contexte
+Audit de sécurité avant déploiement : le fichier `backend/.env` est bien ignoré
+par `.gitignore`, mais il avait été commité dans le premier commit (`5116dc4c`)
+avant l'ajout du `.gitignore`.
+
+### Erreur constatée
+`git show 5116dc4c:backend/.env` affiche les secrets en clair (JWT_SECRET,
+DATABASE_URL, clés Cloudinary, Unsplash, SMTP, Groq). Le dépôt étant hébergé
+sur GitHub, tout clone permet de récupérer ces valeurs.
+
+### Cause
+Le `.env` a été créé et commité avant que le `.gitignore` ne l'exclue. Le commit
+`ee2b0bbf` l'a ensuite retiré du suivi, mais l'historique conserve le contenu.
+
+### Solution
+- **Rotation de tous les secrets** : nouveau JWT_SECRET, régénération des clés
+  Cloudinary / Groq / Unsplash / SMTP, mise à jour du `.env` local et des
+  variables d'environnement Render.
+- Création de `backend/.env.example` documentant chaque variable sans valeur.
+- Option non retenue : réécriture de l'historique (`git filter-repo` /
+  BFG + force-push) — la rotation reste nécessaire si le dépôt a été public,
+  et la réécriture casse les clones existants.
+
+### Vérification
+- `git show 5116dc4c:backend/.env` affiche toujours les anciennes valeurs,
+  mais elles sont désormais révoquées et inutilisables.
+- `git status` ne liste plus `backend/.env` (ignoré).
+
+### Points de vigilance
+- Toute clé ayant été commitée doit être considérée comme compromise, même
+  après suppression du fichier.
+- En cas de régénération du JWT_SECRET, tous les tokens en cours sont
+  invalidés : les utilisateurs devront se reconnecter.

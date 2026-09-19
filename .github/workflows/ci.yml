@@ -61,6 +61,10 @@ jobs:
           node --check src/middlewares/errorMiddleware.js
           node --check src/services/badgeService.js
 
+      - name: Run backend tests
+        working-directory: backend
+        run: npm test
+
   frontend:
     name: Frontend build
     runs-on: ubuntu-latest

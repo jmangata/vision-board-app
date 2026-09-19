@@ -52,6 +52,19 @@ function Profile() {
     window.location.reload();
   };
 
+  // Supprime définitivement le compte (droit à l'oubli RGPD) après confirmation
+  // et vérification du mot de passe côté serveur, puis déconnecte.
+  const deleteAccount = async () => {
+    const password = window.prompt('Entrez votre mot de passe pour confirmer la suppression définitive du compte :');
+    if (!password) return;
+    try {
+      await api.delete('/users/me', { data: { password } });
+      logout();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Erreur lors de la suppression du compte');
+    }
+  };
+
   if (!user) return <p className="p-5">Chargement...</p>;
 
   // Formate la date d'inscription en français pour l'affichage.
@@ -86,6 +99,12 @@ function Profile() {
         </div>
       )}
 
+      {error && !editing && (
+        <div className="bg-error-container/20 text-error p-3 rounded-xl text-sm font-medium mb-4">
+          {error}
+        </div>
+      )}
+
       {!editing ? (
         <div className="space-y-3">
           <button onClick={() => setEditing(true)} className="w-full card p-4 flex items-center gap-4 hover:shadow-lg transition-shadow">
@@ -96,6 +115,16 @@ function Profile() {
           <button onClick={logout} className="w-full card p-4 flex items-center gap-4 hover:shadow-lg transition-shadow">
             <span className="material-symbols-outlined text-error">logout</span>
             <span className="font-medium text-error">Déconnexion</span>
+            <span className="material-symbols-outlined ml-auto text-outline">chevron_right</span>
+          </button>
+          <button onClick={deleteAccount} className="w-full card p-4 flex items-center gap-4 hover:shadow-lg transition-shadow">
+            <span className="material-symbols-outlined text-error">delete_forever</span>
+            <span className="font-medium text-error">Supprimer mon compte</span>
+            <span className="material-symbols-outlined ml-auto text-outline">chevron_right</span>
+          </button>
+          <button onClick={() => navigate('/privacy')} className="w-full card p-4 flex items-center gap-4 hover:shadow-lg transition-shadow">
+            <span className="material-symbols-outlined text-outline">privacy_tip</span>
+            <span className="font-medium text-on-surface">Politique de confidentialité</span>
             <span className="material-symbols-outlined ml-auto text-outline">chevron_right</span>
           </button>
         </div>

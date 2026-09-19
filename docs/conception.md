@@ -507,3 +507,94 @@ Lors du premier test, la route `POST /api/goals/:goalId/steps` retournait une er
 - **PostgreSQL** : 16 (conteneur Docker)
 - **Test API** : Thunder Client (extension VS Code) + `test-api.js`
 - **Gestion de version** : Git (https://github.com/jmangata/vision-board-app)
+
+---
+
+## 14. Sécurité
+
+La couche sécurité est configurée dans `backend/app.js` et complétée dans les contrôleurs :
+
+- **helmet** : ajoute les en-têtes HTTP de sécurité (CSP, X-Frame-Options, nosniff…).
+- **Rate limiting** (`express-rate-limit`) :
+  - 200 requêtes / 15 min par IP sur l'ensemble de `/api`,
+  - 20 tentatives / 15 min sur `/api/auth` pour contrer le brute-force.
+- **CORS restreint** : en production, seules les origines listées dans
+  `ALLOWED_ORIGINS` peuvent appeler l'API ; en développement tout est permis.
+- **Validation des entrées** : format email normalisé et mot de passe fort
+  (≥ 12 caractères, lettre, chiffre, caractère spécial) côté serveur.
+- **bcrypt** : hachage des mots de passe (10 rounds).
+- **JWT** : authentification stateless, expiration configurable (`JWT_EXPIRES_IN`).
+- **Prisma** : requêtes paramétrées → protection native contre les injections SQL.
+- **Secrets** : jamais commités (`.env` dans `.gitignore`, `backend/.env.example` fourni).
+
+Extrait de configuration (`backend/app.js`) :
+
+```js
+app.use(helmet());
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { message: 'Trop de tentatives de connexion, réessayez plus tard.' },
+});
+app.use('/api/auth', authLimiter, authRoutes);
+```
+
+## 15. Tests automatisés
+
+Les tests sont exécutés avec **Vitest** (compatible ESM) et **Supertest** pour
+l'intégration HTTP. L'application Express est isolée dans `backend/app.js`
+(sans `listen`) afin de pouvoir être importée par Supertest.
+
+```
+backend/tests/
+├── api.test.js           # Intégration : health, validation, auth (401)
+├── streak.test.js        # Unitaire : computeStreakUpdate
+└── badgeService.test.js  # Unitaire : checkBadges avec Prisma mocké
+```
+
+Commandes :
+
+```bash
+cd backend
+npm test               # lance la suite (17 tests)
+npm run test:coverage  # avec couverture
+```
+
+Couverture actuelle :
+- `computeStreakUpdate` : 1ère connexion, même jour, lendemain, rupture de streak ;
+- `checkBadges` : attribution de `first_goal`, `first_completed`, `explorer`,
+  `streak_7` et non-duplication des badges déjà possédés ;
+- API : `GET /api/health`, validation 400 de register/login, 401 des routes
+  protégées sans token ou avec token invalide.
+
+Exemple de test d'intégration :
+
+```js
+it('GET /api/goals sans token renvoie 401', async () => {
+  const res = await request(app).get('/api/goals');
+  expect(res.status).toBe(401);
+});
+```
+
+Les tests sont exécutés dans la CI GitHub Actions (job *Backend checks*,
+étape `npm test`) avant tout déploiement Render.
+
+### 14.1 Conformité RGPD
+
+- **Droit à l'oubli** : `DELETE /api/users/me` supprime le compte après
+  confirmation par mot de passe ; les contraintes `onDelete: Cascade` du schéma
+  Prisma effacent automatiquement objectifs, étapes, rappels et badges.
+- **Réinitialisation du mot de passe** : `POST /api/auth/forgot-password`
+  génère un token aléatoire dont seul le **hash SHA-256** est stocké (1 h de
+  validité) ; `POST /api/auth/reset-password` applique le nouveau mot de passe
+  et invalide le token (usage unique). La réponse est identique que le compte
+  existe ou non (**anti-énumération**).
+- **Politique de confidentialité** : page publique `/privacy` (web), accessible
+  aussi depuis le mobile via `Linking`.
+
+```
+POST /api/auth/forgot-password   → token SHA-256 en base + email (lien 1 h)
+POST /api/auth/reset-password    → vérifie hash + expiry, hash bcrypt, token effacé
+DELETE /api/users/me             → vérifie mot de passe, cascade Prisma, 204
+```

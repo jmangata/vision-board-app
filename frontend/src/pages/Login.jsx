@@ -50,7 +50,7 @@ function Login() {
           <div>
             <div className="flex justify-between items-center px-1 mb-1">
               <label className="text-sm font-semibold text-on-surface-variant">Mot de passe</label>
-              <a href="#" className="text-sm text-primary-container">Oublié ?</a>
+              <Link to="/forgot-password" className="text-sm text-primary-container">Oublié ?</Link>
             </div>
             <div className="relative">
               <span className=" absolute left-4 top-1/2 -translate-y-1/2 text-outline"></span>
@@ -91,6 +91,9 @@ function Login() {
       <p className="mt-6 text-sm text-outline">
         Pas de compte ?{' '}
         <Link to="/register" className="text-primary-container font-semibold">Inscription</Link>
+      </p>
+      <p className="mt-3 text-xs text-outline-variant">
+        <Link to="/privacy">Politique de confidentialité</Link>
       </p>
     </main>
   );

@@ -1,4 +1,4 @@
-// Lecture et mise à jour du profil utilisateur, y compris le changement de mot de passe.
+// Lecture, mise à jour et suppression du profil utilisateur (RGPD : droit à l'oubli).
 import { prisma } from '../prisma.js';
 import bcrypt from 'bcrypt';
 
@@ -50,6 +50,28 @@ export const updateProfile = async (req, res) => {
     });
 
     res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+// DELETE /api/users/me — Suppression du compte (droit à l'oubli RGPD).
+// Exige le mot de passe pour confirmer, puis supprime l'utilisateur : les objectifs,
+// étapes, rappels et badges sont effacés en cascade par les contraintes Prisma.
+export const deleteAccount = async (req, res) => {
+  try {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: 'Le mot de passe est requis pour confirmer la suppression.' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const valid = await bcrypt.compare(password, user.passwordHash);
+    if (!valid) {
+      return res.status(401).json({ message: 'Mot de passe incorrect' });
+    }
+
+    await prisma.user.delete({ where: { id: req.user.id } });
+    res.status(204).send();
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

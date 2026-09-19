@@ -1,5 +1,105 @@
 # Changelog — Fonctionnalités
 
+## RGPD — droit à l'oubli et réinitialisation du mot de passe
+
+### Contexte
+Préparation de la conformité RGPD et complétion du parcours d'authentification :
+l'application ne proposait ni suppression de compte, ni récupération de mot de
+passe, ni politique de confidentialité.
+
+### Erreur constatée
+- Aucun endpoint de suppression de compte (droit à l'oubli non couvert).
+- Le lien « Mot de passe oublié » de `Login.jsx` pointait vers `#` (sans effet).
+- L'écran `ProfileScreen` mobile était un placeholder sans fonctionnalité.
+
+### Cause
+Ces parcours n'avaient pas été implémentés dans le périmètre initial du MVP.
+
+### Solution
+- Backend : colonnes `reset_token` / `reset_token_expiry` sur `users`
+  (migration `add_password_reset`), endpoints `POST /api/auth/forgot-password`
+  et `POST /api/auth/reset-password` (token SHA-256, expiration 1 h, réponse
+  neutre anti-énumération), `DELETE /api/users/me` avec confirmation par mot
+  de passe — la cascade Prisma supprime objectifs, étapes, rappels et badges.
+- Email : `sendPasswordResetEmail` dans `emailService.js`, lien vers
+  `FRONTEND_URL/reset-password?token=...`.
+- Frontend web : pages `ForgotPassword`, `ResetPassword` et `Privacy`
+  (politique de confidentialité), routes ajoutées dans `App.jsx`, liens dans
+  `Login.jsx`, bouton « Supprimer mon compte » + lien confidentialité dans
+  `Profile.jsx`.
+- Mobile : `ProfileScreen` complet (infos, déconnexion, suppression de compte
+  avec `Alert.alert` + mot de passe, liens web), lien « Mot de passe oublié ? »
+  dans `LoginScreen` ouvrant la page web via `Linking`.
+- Tests : 4 cas ajoutés dans `tests/api.test.js` (validation forgot/reset,
+  401 sur `DELETE /users/me`).
+
+### Vérification
+- `cd backend && npm test` → 21 tests passent.
+- `cd frontend && npm run build` → build OK.
+- Parcours manuel : Login → « Oublié ? » → email → reset → connexion ;
+  Profil → « Supprimer mon compte » → compte et données effacés.
+
+### Points de vigilance
+- `FRONTEND_URL` doit être défini sur Render pour que les liens email pointent
+  vers le frontend de production.
+- L'échec SMTP ne bloque pas la réponse (200 + log serveur) : vérifier les logs
+  Render si les emails n'arrivent pas.
+- `EXPO_PUBLIC_WEB_URL` permet de surcharger l'URL du site web côté mobile.
+
+---
+
+
+## Sécurisation de l'API et mise en place des tests automatisés
+
+### Contexte
+Préparation du projet pour l'examen : l'API était exposée sans protection
+renforcée (CORS ouvert, aucune limitation de débit, pas de headers de sécurité)
+et aucun test automatisé n'existait.
+
+### Erreur constatée
+- `app.use(cors())` acceptait toutes les origines.
+- Aucun rate limiting sur `/api/auth` (brute-force possible).
+- Script `test` racine en échec (`"Error: no test specified"`).
+- Impossible de tester l'API avec Supertest : `index.js` démarrait le serveur
+  à l'import (`app.listen` dans le point d'entrée).
+
+### Cause
+La configuration Express et le démarrage du serveur étaient fusionnés dans
+`index.js`, et aucune librairie de sécurité ni framework de test n'était installé.
+
+### Solution
+- Extraction de la configuration Express dans `backend/app.js` (middlewares +
+  routes exportés sans `listen`) ; `index.js` ne fait plus que charger `.env`,
+  lancer le cron de rappels et écouter le port.
+- Ajout de `helmet` (en-têtes de sécurité) et `express-rate-limit`
+  (200 req/15 min global, 20 req/15 min sur `/api/auth`).
+- CORS restreint en production via la variable `ALLOWED_ORIGINS`.
+- Montage de `suggestionRoutes` sur `/api/suggestions` (route existante non exposée).
+- Export de `computeStreakUpdate` dans `authController.js` pour testabilité.
+- Tests Vitest + Supertest : `tests/api.test.js` (intégration),
+  `tests/streak.test.js` et `tests/badgeService.test.js` (unitaires, Prisma mocké).
+- Scripts backend : `npm test`, `npm run test:coverage`.
+- CI : étape `npm test` ajoutée au job *Backend checks*.
+- Fichiers modifiés : `backend/app.js` (nouveau), `backend/index.js`,
+  `backend/package.json`, `backend/.env.example` (nouveau),
+  `backend/tests/*` (nouveaux), `.github/workflows/ci.yml`, `README.md` (nouveau),
+  `docs/conception.md` (sections Sécurité et Tests).
+
+### Vérification
+- `cd backend && npm test` → 17 tests passent (3 fichiers).
+- `node -e "import('./app.js')"` → l'application se charge sans erreur.
+
+### Points de vigilance
+- `ALLOWED_ORIGINS` doit être renseigné sur Render sinon les appels cross-origin
+  seront bloqués en production.
+- Les clients mobiles natifs n'envoient pas d'en-tête `Origin` : ils ne sont pas
+  affectés par la restriction CORS.
+- Le rate limiter est en mémoire : il se réinitialise à chaque redémarrage et ne
+  est pas partagé entre plusieurs instances.
+
+---
+
+
 ## Alignement des barres supérieures Expo sur le responsive
 
 ### Contexte

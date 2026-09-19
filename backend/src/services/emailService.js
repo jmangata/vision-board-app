@@ -25,3 +25,19 @@ export async function sendReminderEmail(to, goalTitle) {
     `,
   });
 }
+
+// Envoie le lien de réinitialisation de mot de passe.
+// L'URL contient le token en clair ; en base seul son hash SHA-256 est conservé.
+export async function sendPasswordResetEmail(to, resetUrl) {
+  await transporter.sendMail({
+    from: '"Vision Board" <no-reply@visionboard.app>',
+    to,
+    subject: 'Réinitialisation de votre mot de passe',
+    html: `
+      <h2>Réinitialisation du mot de passe</h2>
+      <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le lien ci-dessous (valide 1 heure) :</p>
+      <p><a href="${resetUrl}">${resetUrl}</a></p>
+      <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet email.</p>
+    `,
+  });
+}

@@ -21,6 +21,10 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   lastLoginAt  DateTime? @map("last_login_at")
   streakDays   Int       @default(1) @map("streak_days")
+  // Réinitialisation de mot de passe : on stocke le hash SHA-256 du token (jamais le token en clair)
+  // ainsi que sa date d'expiration (1 h).
+  resetToken       String?   @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
 
   goals     Goal[]
   reminders Reminder[]

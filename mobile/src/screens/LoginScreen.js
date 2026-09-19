@@ -1,7 +1,7 @@
 // Écran de connexion : affiche le formulaire d'identification,
 // appelle le backend puis met à jour le contexte d'authentification.
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login as loginApi } from '../services/authService';
@@ -51,6 +51,9 @@ export default function LoginScreen({ navigation }) {
           <TextInput style={styles.input} placeholder="name@example.com" placeholderTextColor="#737781" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} value={form.email} onChangeText={(email) => setForm({ ...form, email })} editable={!loading} />
           <Text style={styles.label}>Mot de passe</Text>
           <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor="#737781" secureTextEntry value={form.password} onChangeText={(password) => setForm({ ...form, password })} editable={!loading} onSubmitEditing={handleSubmit} />
+          <TouchableOpacity onPress={() => Linking.openURL('https://visionboard-frontend.onrender.com/forgot-password')}>
+            <Text style={styles.forgotLink}>Mot de passe oublié ?</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={[styles.button, loading && styles.disabled]} onPress={handleSubmit} disabled={loading}>
             {loading ? <ActivityIndicator color="#FFFFFF" /> : <View style={styles.buttonContent}><Text style={styles.buttonText}>Connexion</Text><Ionicons name="arrow-forward" size={20} color="#FFFFFF" /></View>}
           </TouchableOpacity>
@@ -80,4 +83,5 @@ const styles = StyleSheet.create({
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24 },
   footerText: { color: '#737781', fontSize: 14 },
   footerLink: { color: '#2E5797', fontSize: 14, fontWeight: '700' },
+  forgotLink: { color: '#2E5797', fontSize: 13, textAlign: 'right', marginTop: -10, marginBottom: 12, marginRight: 4 },
 });
