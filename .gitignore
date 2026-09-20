@@ -9,3 +9,4 @@ build/
 !.env.example
 backend/.env
 frontend/.env
+dist-check/
