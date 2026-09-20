@@ -33,11 +33,11 @@ export async function initNotifications() {
   return finalStatus === 'granted';
 }
 
-// Programme un rappel local la veille de l'échéance d'un objectif à 9h00.
+// Programme un rappel local la veille de l'échéance d'un objectif à 9h00,
+// avec un message incitant l'utilisateur à terminer son objectif.
 // Ne fait rien si la date est absente, déjà passée ou si la permission est refusée.
 export async function scheduleGoalReminder(goal) {
   if (!goal?.targetDate) return null;
-
   const trigger = new Date(goal.targetDate);
   trigger.setDate(trigger.getDate() - 1);
   trigger.setHours(9, 0, 0, 0);
@@ -46,7 +46,7 @@ export async function scheduleGoalReminder(goal) {
   return Notifications.scheduleNotificationAsync({
     content: {
       title: 'Échéance proche',
-      body: `Votre objectif « ${goal.title} » arrive à échéance demain.`,
+      body: `Plus qu'un jour pour terminer « ${goal.title} ». Encore un effort, vous êtes presque au bout !`,
       sound: true,
       ...(Platform.OS === 'android' ? { channelId: 'reminders' } : {}),
     },
