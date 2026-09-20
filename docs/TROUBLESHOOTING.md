@@ -629,3 +629,51 @@ taskkill /PID <pid> /F
   avec un double slash (`//FI`) pour éviter la conversion en chemin MSYS.
 - Un serveur lancé en arrière-plan pour un test doit toujours être terminé
   explicitement (kill du PID ou du shell qui l'héberge).
+
+---
+
+## Unknown argument `resetToken` après ajout d'un champ Prisma
+
+### Contexte
+Test du parcours « Mot de passe oublié » sur le frontend web : la requête
+`POST /api/auth/forgot-password` échoue côté backend après l'ajout des champs
+`resetToken` / `resetTokenExpiry` au schéma Prisma.
+
+### Erreur constatée
+```
+Invalid `prisma.user.update()` invocation.
+Unknown argument `resetToken`. Available options are marked with ?.
+```
+
+### Cause
+Double problème :
+1. Le **client Prisma généré** (`node_modules/.prisma/client`) datait d'avant
+   l'ajout des champs : il ne connaissait pas `resetToken`.
+2. La **migration SQL** `add_password_reset` n'avait pas encore été appliquée
+   à la base locale.
+3. Bonus : `npx prisma generate` échouait avec `EPERM: rename ...query_engine
+   -windows.dll.node` car le serveur nodemon tournait et verrouillait la DLL.
+   Une tentative dans `frontend/` installait `prisma@8.0.0-rc` via npx (le
+   package n'existe que dans `backend/`).
+
+### Solution
+1. Arrêter le serveur de dev (le processus node qui écoute sur :5000).
+2. `cd backend && npx prisma generate` — régénère le client avec les nouveaux champs.
+3. `npx prisma migrate deploy` — applique `20260919193000_add_password_reset`.
+4. Relancer `npm run dev` et retester le parcours.
+
+### Vérification
+```bash
+node -e "import('@prisma/client').then(m=>new m.PrismaClient().user
+  .findFirst({select:{resetToken:true}}))"  # → pas d'erreur = champ connu
+```
+Le formulaire « Mot de passe oublié » répond alors 200 et l'email part via Mailjet.
+
+### Points de vigilance
+- **Toujours exécuter `prisma generate` et `migrate deploy` après avoir modifié
+  `schema.prisma`**, et depuis le dossier `backend/` (Prisma n'est pas installé
+  à la racine ni dans `frontend/`).
+- Arrêter nodemon avant `prisma generate` sous Windows : la DLL du query engine
+  est verrouillée par le processus en cours (erreur `EPERM`).
+- En production aucune action n'est requise : `buildCommand` de `render.yaml`
+  exécute déjà `prisma generate && prisma migrate deploy`.
