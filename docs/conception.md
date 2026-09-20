@@ -598,3 +598,54 @@ POST /api/auth/forgot-password   → token SHA-256 en base + email (lien 1 h)
 POST /api/auth/reset-password    → vérifie hash + expiry, hash bcrypt, token effacé
 DELETE /api/users/me             → vérifie mot de passe, cascade Prisma, 204
 ```
+
+## 16. Notifications mobiles (Expo)
+
+Les notifications **locales** (sans serveur push) sont gérées par
+`mobile/src/services/notificationService.js` via `expo-notifications`.
+
+### Fonctionnement
+
+```js
+// Permission demandée au démarrage (mobile/App.js)
+export async function initNotifications() {
+  const { status } = await Notifications.getPermissionsAsync();
+  if (status !== 'granted') await Notifications.requestPermissionsAsync();
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('reminders', {
+      name: 'Rappels', importance: Notifications.AndroidImportance.HIGH,
+    });
+  }
+}
+
+// Rappel planifié la veille de l'échéance à 9h00 (CreateGoalScreen)
+export async function scheduleGoalReminder(goal) {
+  if (!goal?.targetDate) return null;
+  const trigger = new Date(goal.targetDate);
+  trigger.setDate(trigger.getDate() - 1);
+  trigger.setHours(9, 0, 0, 0);
+  if (trigger.getTime() <= Date.now()) return null;
+  return Notifications.scheduleNotificationAsync({
+    content: { title: 'Échéance proche', body: `Plus qu'un jour pour terminer « ${goal.title} »...` },
+    trigger,
+  });
+}
+
+// Notification immédiate de confirmation à la création
+export async function notifyGoalCreated(goalTitle) {
+  return Notifications.scheduleNotificationAsync({
+    content: { title: 'Objectif créé', body: `« ${goalTitle} » est enregistré...` },
+    trigger: null, // affichage instantané
+  });
+}
+```
+
+### Choix techniques
+
+- **Local vs push** : les rappels d'échéance n'ont pas besoin de serveur (la date
+  est connue à la création) ; Expo Go ne supporte plus le push distant depuis le
+  SDK 53 — un development build EAS serait requis pour du vrai push.
+- **Handler foreground** : `setNotificationHandler` avec `shouldShowAlert: true`
+  affiche la bannière même quand l'app est ouverte.
+- **Complémentarité** : les rappels email côté serveur (node-cron + Mailjet)
+  couvrent les utilisateurs sans l'app installée.
