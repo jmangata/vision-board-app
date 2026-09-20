@@ -1,5 +1,29 @@
 ---
 
+### 22. Expo Doctor signale trois écarts de patch SDK 57
+
+### Contexte
+Après la finalisation des écrans mobiles, la vérification `npx expo-doctor` a été exécutée en complément de l’export Android obligatoire.
+
+### Erreur constatée
+`20/21 checks passed` avec des versions attendues `expo ~57.0.24`, `expo-image-picker ~57.0.19` et `expo-notifications ~57.0.20`, alors que le projet utilise respectivement `57.0.22`, `57.0.17` et `57.0.18`.
+
+### Cause
+De nouvelles révisions patch compatibles avec le SDK 57 sont proposées par le registre depuis la dernière stabilisation du manifeste mobile.
+
+### Solution
+- Fichiers concernés : `docs/TROUBLESHOOTING.md`.
+- Aucune mise à niveau automatique n’a été appliquée : la mission interdit une mise à jour Expo sans nécessité démontrée et l’export Android fonctionne avec les versions verrouillées actuelles.
+- Conserver ce diagnostic pour décider séparément d’une montée de patch via `npx expo install` après recette.
+
+### Vérification
+`npx expo export --platform android --output-dir dist-check` termine avec succès et génère le bundle Android malgré cet avertissement de versions patch.
+
+### Points de vigilance
+Ne pas utiliser `npm update` ni `npm audit fix --force`. Si les patchs sont adoptés ultérieurement, exécuter `npx expo install expo expo-image-picker expo-notifications`, puis refaire Expo Doctor, l’export Android et la recette des notifications locales.
+
+---
+
 ### 21. React Navigation refuse le composant Dashboard
 
 ### Contexte

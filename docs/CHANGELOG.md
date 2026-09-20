@@ -1,5 +1,59 @@
 # Changelog — Fonctionnalités
 
+## Finalisation des écrans principaux de l’application mobile
+
+### Contexte
+La version Expo devait reproduire le responsive web pour les quatre onglets principaux et permettre la présentation complète de l’application au jury.
+
+### Erreur ou comportement attendu
+Les onglets Statistiques et Badges affichaient des placeholders. Le profil ne permettait pas de modifier le prénom, l’email ou le mot de passe, et les en-têtes n’étaient pas partagés. Les écrans devaient charger les données REST, traiter le chargement et les erreurs, respecter les Safe Areas et conserver une navigation tactile cohérente.
+
+### Cause
+Les écrans mobiles avaient été initialisés pour débloquer React Navigation, mais leur raccordement fonctionnel et leur harmonisation avec les composants web n’avaient pas encore été réalisés.
+
+### Solution apportée
+- Fichiers concernés : `mobile/src/components/TopBar.js`, `mobile/src/components/BadgeCard.js`, `mobile/src/screens/BoardScreen.js`, `mobile/src/screens/DashboardScreen.js`, `mobile/src/screens/BadgesScreen.js`, `mobile/src/screens/ProfileScreen.js`, `mobile/src/screens/CreateGoalScreen.js`, `mobile/src/screens/GoalDetailScreen.js`, `mobile/src/navigation/AppNavigator.js`.
+- Ajout d’un `TopBar` commun avec Safe Area, actions Material facultatives et titre toujours centré.
+- Implémentation du dashboard via `GET /api/dashboard`, avec grille 2 × 2, résumé des badges, chargement, erreur et nouvelle tentative.
+- Implémentation de la grille de badges via `GET /api/badges` et `GET /api/badges/me`, avec compteur, états obtenu/verrouillé, erreur et liste vide.
+- Ajout au profil de l’édition via `PUT /api/users/me`, de la confirmation du nouveau mot de passe et des validations alignées sur l’inscription.
+- Harmonisation des en-têtes Board, création et détail, puis adaptation de la tab bar à la Safe Area inférieure.
+
+### Vérification
+- `cd mobile && npx expo export --platform android --output-dir dist-check` : export Android réussi.
+- `git diff --check` : aucune erreur de formatage bloquante.
+- La recette Expo Go restante consiste à parcourir Board, Stats, Badges et Profil, tester les états réseau, modifier le profil puis créer un objectif.
+- Vérifier que les mots de passe ne sont jamais affichés ni journalisés.
+
+### Points de vigilance
+- L’API réellement exposée pour les badges utilisateur est `/api/badges/me`.
+- La validation mobile améliore le retour immédiat, mais le backend demeure l’autorité finale.
+- La recette des appels authentifiés nécessite un backend accessible depuis le téléphone.
+
+---
+
+## Notifications locales après création d’un objectif
+
+### Contexte
+La création mobile confirme l’enregistrement et programme un rappel la veille de l’échéance à 9 h.
+
+### Erreur ou comportement attendu
+La fonctionnalité doit rester locale à l’appareil et ne doit pas être présentée comme une infrastructure de push distant.
+
+### Cause
+Expo Notifications couvre à la fois les notifications locales et distantes, ce qui peut créer une ambiguïté lors de la démonstration.
+
+### Solution apportée
+- Fichiers concernés : `mobile/App.js`, `mobile/src/services/notificationService.js`, `mobile/src/screens/CreateGoalScreen.js`.
+- La permission est demandée au démarrage, le canal Android `reminders` est créé, la confirmation est déclenchée immédiatement et le rappel est planifié localement.
+- Aucun token Expo Push, serveur d’envoi ou push distant n’est utilisé.
+
+### Vérification
+Créer un objectif avec une échéance suffisamment éloignée, accepter la permission, vérifier la notification immédiate puis contrôler le rappel planifié sur l’appareil.
+
+### Points de vigilance
+Expo Go SDK 53+ limite la prise en charge des notifications push distantes. Un development build EAS est requis pour tester ces push, mais pas pour la logique de notifications locales utilisée ici.
+
 ## RGPD — droit à l'oubli et réinitialisation du mot de passe
 
 ### Contexte

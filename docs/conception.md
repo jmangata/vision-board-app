@@ -1,5 +1,34 @@
 # Dossier de conception — Vision Board App
 
+## Architecture de l’application mobile Expo
+
+### Contexte
+Le client mobile reprend le design responsive React tout en utilisant les primitives natives nécessaires aux Safe Areas, au clavier, au tactile et à la navigation.
+
+### Erreur ou comportement attendu
+Les quatre onglets doivent partager le même langage visuel sans recopier les calculs d’insets, et les écrans secondaires doivent conserver leurs actions contextuelles. Les données restent fournies par l’API REST commune au web et au mobile.
+
+### Cause
+Un en-tête propre à chaque écran créait des écarts de hauteur, d’alignement et de comportement selon la plateforme.
+
+### Solution apportée
+- Fichiers concernés : `mobile/src/components/TopBar.js`, `mobile/src/navigation/AppNavigator.js`, `mobile/src/screens/BoardScreen.js`, `mobile/src/screens/DashboardScreen.js`, `mobile/src/screens/BadgesScreen.js`, `mobile/src/screens/ProfileScreen.js`, `mobile/src/screens/CreateGoalScreen.js`, `mobile/src/screens/GoalDetailScreen.js`.
+- `TopBar` utilise `useSafeAreaInsets`, réserve deux actions de 44 px et maintient un titre centré dans une zone de contenu de 64 px.
+- Un stack racine sépare l’authentification, les tabs principales et les écrans secondaires. Les tabs restent Board, Stats, Badges et Profil ; leur hauteur inclut l’inset inférieur iOS.
+- Le client Axios partagé lit le JWT dans AsyncStorage et l’injecte dans `Authorization: Bearer`. Dashboard appelle `/dashboard`, Badges appelle `/badges` et `/badges/me`, Profil appelle `/users/me`.
+- Les listes utilisent `ScrollView` ou `FlatList`, un espace inférieur supérieur à 100 px et `KeyboardAvoidingView` pour le formulaire de profil.
+
+### Vérification
+Compiler le bundle Android, puis vérifier sur appareil les deux orientations d’insets, le clavier du profil, les quatre onglets et les écrans création/détail.
+
+### Points de vigilance
+React Native n’emploie ni React Router ni le CSS Tailwind du frontend. Ces différences d’implémentation sont assumées ; la palette, Inter, les icônes Material, les dimensions et la hiérarchie visuelle restent alignées.
+
+### Notifications locales
+`initNotifications` demande la permission et configure le canal Android `reminders`. Après création, `notifyGoalCreated` planifie une notification locale immédiate et `scheduleGoalReminder` programme localement la veille à 9 h. Le système ne récupère aucun Expo Push Token et ne dépend d’aucun serveur d’envoi.
+
+Une notification locale est créée et conservée par l’appareil. Un push distant part d’un serveur vers APNs/FCM, exige des identifiants et un token de destination. Depuis Expo Go SDK 53+, le push distant nécessite un development build EAS ; cette limite ne transforme pas les rappels locaux du projet en push distant.
+
 ---
 
 ## 1. Contexte et objectifs

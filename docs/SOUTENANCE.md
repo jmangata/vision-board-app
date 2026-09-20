@@ -3,6 +3,35 @@
 Aide-mémoire pour la présentation : scénario de démo, questions probables du jury
 avec les réponses ancrées dans le code, et checklist du jour J.
 
+## Démonstration web et mobile
+
+### Contexte
+La soutenance doit montrer que les clients React et Expo partagent les mêmes données et le même design, sans masquer les adaptations natives.
+
+### Erreur ou comportement attendu
+Le mobile ne doit plus être présenté comme une simple déclinaison incomplète : ses onglets Board, Stats, Badges et Profil sont fonctionnels, et ses notifications doivent être qualifiées correctement.
+
+### Cause
+Les premiers écrans Expo étaient des placeholders et la différence entre notification locale et push distant n’était pas explicitée dans le support oral.
+
+### Solution apportée
+- Fichiers concernés : `mobile/src/components/TopBar.js`, `mobile/src/navigation/AppNavigator.js`, `mobile/src/screens/`, `mobile/src/services/notificationService.js`.
+- Démonstration conseillée : ouvrir le même compte sur le web et le mobile, créer un objectif sur mobile, observer la notification immédiate, parcourir les statistiques et badges, puis modifier le profil.
+- Justifier les adaptations natives : React Navigation à la place de React Router, tabs natives, Safe Areas, cibles tactiles de 44 px, clavier avec `KeyboardAvoidingView`, `FlatList` pour la grille et permissions système.
+- Expliquer qu’une notification locale est planifiée par l’application sur l’appareil. Un push distant est envoyé par un serveur via APNs/FCM ; il n’est pas implémenté. Expo Go SDK 53+ impose un development build EAS pour le push distant, pas pour la logique locale présentée.
+
+### Vérification
+Préparer un objectif de démonstration avec une échéance future, autoriser les notifications et tester le parcours complet avant la soutenance sur l’appareil utilisé.
+
+### Points de vigilance
+Le téléphone et le backend local doivent être sur un réseau permettant les appels API. Prévoir une vidéo de secours et ne pas présenter le warning Expo Go relatif au push distant comme un échec des notifications locales.
+
+### Questions possibles du jury
+- **Pourquoi ne pas réutiliser directement les composants React web ?** React Native rend des vues natives et demande des composants dédiés ; l’API, les règles métier et le design system sont néanmoins partagés.
+- **Pourquoi une TopBar commune ?** Elle centralise la Safe Area, les hauteurs, le centrage et les cibles tactiles, ce qui réduit les divergences entre écrans.
+- **Pourquoi `FlatList` pour les badges ?** Elle virtualise la liste et conserve de bonnes performances si le catalogue grandit.
+- **Les notifications fonctionnent-elles application fermée ?** Les rappels locaux déjà planifiés sont gérés par le système ; aucun message distant ne peut être envoyé par le serveur dans l’implémentation actuelle.
+
 ---
 
 ## 1. Pitch (30 secondes)
