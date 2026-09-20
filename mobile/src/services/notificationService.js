@@ -54,6 +54,20 @@ export async function scheduleGoalReminder(goal) {
   });
 }
 
+// Notification immédiate confirmant la création d'un objectif.
+// Utile pour la démo et pour rassurer l'utilisateur sur la prise en compte.
+export async function notifyGoalCreated(goalTitle) {
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Objectif créé',
+      body: `« ${goalTitle} » est enregistré. Au travail, vous pouvez le faire !`,
+      sound: true,
+      ...(Platform.OS === 'android' ? { channelId: 'reminders' } : {}),
+    },
+    trigger: null, // null = affichage immédiat
+  });
+}
+
 // Annule le rappel précédemment planifié pour un objectif (ex. suppression).
 export async function cancelGoalReminder(notificationId) {
   if (!notificationId) return;
