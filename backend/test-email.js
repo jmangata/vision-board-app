@@ -8,7 +8,7 @@ dotenv.config();
 
 const { sendPasswordResetEmail, sendReminderEmail } = await import('./src/services/emailService.js');
 
-const to = process.argv[2] || process.env.SMTP_USER;
+const to = process.argv[2] || process.env.MAIL_FROM || process.env.SMTP_USER;
 
 if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
   console.error('Config SMTP incomplète : vérifiez SMTP_HOST, SMTP_USER et SMTP_PASS dans .env');
