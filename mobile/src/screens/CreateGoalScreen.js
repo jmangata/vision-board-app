@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Sc
 import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { createCategory, createGoal, createStep, getCategories, searchUnsplash, suggestSteps, uploadImage } from '../services/goalService';
+import { scheduleGoalReminder } from '../services/notificationService';
 
 const categoryOrder = ['Sport', 'Musique', 'Voyage', 'Finance', 'Lecture'];
 const categoryIcons = { dumbbell: 'fitness-center', 'music-note': 'music-note', map: 'flight', 'dollar-sign': 'payments', book: 'menu-book', 'book-open': 'menu-book' };
@@ -132,6 +133,8 @@ export default function CreateGoalScreen({ navigation }) {
       }
       const { data: goal } = await createGoal({ title: form.title.trim(), description: form.description.trim(), categoryId, imageUrl: imageUrl || null, targetDate: targetDate ? new Date(`${targetDate}T12:00:00`).toISOString() : null });
       await Promise.all(selectedSteps.map((index) => steps[index]?.title).filter(Boolean).map((title) => createStep(goal.id, title)));
+      // Planifie un rappel local la veille de l'échéance (silencieusement ignoré si pas de date).
+      await scheduleGoalReminder(goal);
       navigation.replace('GoalDetail', { id: goal.id });
     } catch (err) {
       setError(err.response?.data?.message || 'La création de l’objectif a échoué.');

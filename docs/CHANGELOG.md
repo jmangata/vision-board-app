@@ -1105,3 +1105,31 @@ des pages Login/Register (pas de logo, pas de validation en direct).
 ### Vérification
 `cd frontend && npm run build` OK ; parcours : lien email → reset → erreur si
 mismatch → succès → redirection `/login`.
+
+---
+
+## Notifications locales Expo (rappels d'échéance)
+
+### Contexte
+Le package `expo-notifications` était installé mais jamais utilisé :
+`notificationService.js` était un fichier vide.
+
+### Solution
+- `mobile/src/services/notificationService.js` : handler de notifications au
+  premier plan, `initNotifications()` (permission + canal Android "reminders"),
+  `scheduleGoalReminder(goal)` qui planifie une notification locale la veille
+  de l'échéance à 9h00, `cancelGoalReminder()`.
+- `mobile/App.js` : `initNotifications()` au montage pour demander la permission.
+- `mobile/src/screens/CreateGoalScreen.js` : appel de `scheduleGoalReminder`
+  après création d'un objectif ayant une `targetDate`.
+
+### Vérification
+Créer un objectif avec une date d'échéance future dans l'app Expo → la
+notification est planifiée (vérifiable via
+`Notifications.getAllScheduledNotificationsAsync()`).
+
+### Points de vigilance
+- Notifications **locales** : elles fonctionnent même hors ligne et sans
+  serveur push ; elles disparaissent si l'app est désinstallée.
+- Les vraies notifications push distantes (Expo Push Service) nécessiteraient
+  un `projectId` EAS et un backend d'envoi — non requis pour le MVP.
