@@ -96,6 +96,20 @@ services:
       - key: SMTP_PASS
         sync: false                 # Mot de passe SMTP
 
+      # -----------------------------------------------------------------------
+      # CORS et liens emails
+      # -----------------------------------------------------------------------
+      # ALLOWED_ORIGINS : liste des origines autorisées à appeler l'API en
+      # production (voir backend/app.js). Définir l'URL du frontend, ex :
+      # https://visionboard-frontend.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+      # FRONTEND_URL : base utilisée pour construire les liens envoyés par email
+      # (réinitialisation de mot de passe). Même valeur que ci-dessus.
+      - key: FRONTEND_URL
+        sync: false
+
   # ---------------------------------------------------------------------------
   # 2. Frontend web (React + Vite, site statique)
   # ---------------------------------------------------------------------------
