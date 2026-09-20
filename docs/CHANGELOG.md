@@ -1084,3 +1084,24 @@ et les deux mails arrivent dans la boîte.
 ### Points de vigilance
 - `MAIL_FROM` doit être un expéditeur vérifié dans Mailjet, sinon erreur 400.
 - À renseigner aussi sur Render (`visionboard-api` → Environment).
+
+---
+
+## Alignement visuel des pages de réinitialisation de mot de passe
+
+### Contexte
+Les pages `ForgotPassword` et `ResetPassword` avaient un style minimal différent
+des pages Login/Register (pas de logo, pas de validation en direct).
+
+### Solution
+- `ResetPassword.jsx` : refonte sur le modèle de `Register.jsx` — en-tête avec
+  logo, checklist des règles de mot de passe validée en direct, champ de
+  confirmation avec message d'erreur immédiat si les deux saisies diffèrent
+  (`aria-invalid`), soumission bloquée tant que les mots de passe ne
+  correspondent pas ou que les règles ne sont pas remplies.
+- `ForgotPassword.jsx` : même en-tête/bannière d'erreur, validation du format
+  email en direct comme dans Register.
+
+### Vérification
+`cd frontend && npm run build` OK ; parcours : lien email → reset → erreur si
+mismatch → succès → redirection `/login`.
