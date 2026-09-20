@@ -584,3 +584,48 @@ Le `.env` a été créé et commité avant que le `.gitignore` ne l'exclue. Le c
   après suppression du fichier.
 - En cas de régénération du JWT_SECRET, tous les tokens en cours sont
   invalidés : les utilisateurs devront se reconnecter.
+
+---
+
+## EADDRINUSE : port 5000 déjà occupé
+
+### Contexte
+Démarrage du backend en développement avec `npm run dev` (nodemon).
+
+### Erreur constatée
+```
+Error: listen EADDRINUSE: address already in use :::5000
+    at Server.listen (node:net:...)
+[nodemon] app crashed - waiting for file changes before starting...
+```
+
+### Cause
+Un processus `node.exe` d'une exécution précédente du serveur (lancé en
+arrière-plan pour un test de `/api/health`) était resté actif et conservait
+le port 5000. Nodemon ne peut pas démarrer tant que le port n'est pas libéré.
+
+### Solution
+Identifier puis terminer le processus qui écoute sur le port :
+
+```bash
+netstat -ano | findstr :5000 | findstr LISTENING   # récupère le PID
+tasklist //FI "PID eq <pid>"                        # vérifie le processus (Git Bash : //FI)
+taskkill //PID <pid> //F                            # le termine (Git Bash : //PID et //F)
+```
+
+En PowerShell (pas de double slash nécessaire) :
+
+```powershell
+netstat -ano | findstr :5000
+taskkill /PID <pid> /F
+```
+
+### Vérification
+`netstat -ano | findstr :5000 | findstr LISTENING` ne retourne rien, puis
+`npm run dev` démarre normalement (`Server running on port 5000`).
+
+### Points de vigilance
+- Sous Git Bash, les options Windows (`/FI`, `/PID`, `/F`) doivent être écrites
+  avec un double slash (`//FI`) pour éviter la conversion en chemin MSYS.
+- Un serveur lancé en arrière-plan pour un test doit toujours être terminé
+  explicitement (kill du PID ou du shell qui l'héberge).
