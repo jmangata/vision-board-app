@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../services/api';
 import { createStep, searchUnsplash } from '../services/goalService';
+import TopBar from '../components/TopBar';
 
 const iconMap = {
   book: 'book',
@@ -179,15 +180,14 @@ export default function GoalDetailScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={[styles.header, { height: 64 + insets.top, paddingTop: insets.top }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerButton}>
-          <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Détail de l'objectif</Text>
-        <TouchableOpacity onPress={handleDelete} style={styles.headerButton}>
-          <MaterialIcons name="delete" size={24} color={colors.error} />
-        </TouchableOpacity>
-      </View>
+      <TopBar
+        title="Détail de l'objectif"
+        leftIcon="arrow-back"
+        onLeftPress={() => navigation.goBack()}
+        rightIcon="delete"
+        rightColor={colors.error}
+        onRightPress={handleDelete}
+      />
 
       <ScrollView
         style={styles.scroll}

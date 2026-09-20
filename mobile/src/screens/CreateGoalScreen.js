@@ -6,6 +6,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { createCategory, createGoal, createStep, getCategories, searchUnsplash, suggestSteps, uploadImage } from '../services/goalService';
 import { notifyGoalCreated, scheduleGoalReminder } from '../services/notificationService';
+import TopBar from '../components/TopBar';
 
 const categoryOrder = ['Sport', 'Musique', 'Voyage', 'Finance', 'Lecture'];
 const categoryIcons = { dumbbell: 'fitness-center', 'music-note': 'music-note', map: 'flight', 'dollar-sign': 'payments', book: 'menu-book', 'book-open': 'menu-book' };
@@ -146,11 +147,7 @@ export default function CreateGoalScreen({ navigation }) {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <View style={styles.header}>
-        <Pressable style={styles.headerButton} onPress={() => navigation.goBack()}><MaterialIcons name="close" size={30} color={colors.primary} /></Pressable>
-        <Text style={styles.headerTitle}>Nouvel Objectif</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      <TopBar title="Nouvel objectif" leftIcon="close" onLeftPress={() => navigation.goBack()} />
 
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.content}>
         <View style={styles.section}>

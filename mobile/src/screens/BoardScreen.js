@@ -10,11 +10,12 @@ import {
   Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 import { getCategories } from '../services/goalService';
+import TopBar from '../components/TopBar';
 
 // Catégories principales affichées dans l'ordre commun aux versions web et mobile.
 const visibleCategoryNames = ['Sport', 'Musique', 'Voyage', 'Finance', 'Lecture'];
@@ -207,22 +208,15 @@ export default function BoardScreen({ navigation }) {
         : goals.filter((goal) => goal.category?.id === activeCategory);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollView} stickyHeaderIndices={[0]}>
-        <View style={styles.header}>
-          <TouchableOpacity activeOpacity={0.7} style={styles.headerButton}>
-            <MaterialIcons name="menu" size={24} color="#0D3F7E" />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Vision Board</Text>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={styles.headerButton}
-            onPress={() => navigation.navigate('CreateGoal')}
-          >
-            <MaterialIcons name="add-circle" size={24} color="#0D3F7E" />
-          </TouchableOpacity>
-        </View>
-
+    <View style={styles.safeArea}>
+      <TopBar
+        title="Vision Board"
+        leftIcon="menu"
+        onLeftPress={() => navigation.openDrawer?.()}
+        rightIcon="add-circle"
+        onRightPress={() => navigation.navigate('CreateGoal')}
+      />
+      <ScrollView style={styles.scrollView}>
         <View style={styles.main}>
           {welcome && (
             <View style={styles.welcome}>
@@ -315,7 +309,7 @@ export default function BoardScreen({ navigation }) {
           )}
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 

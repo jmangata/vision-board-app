@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import LoginScreen from '../screens/LoginScreen';
 import RegisterScreen from '../screens/RegisterScreen';
@@ -22,6 +23,8 @@ const Tab = createBottomTabNavigator();
 // Groupe d'onglets affiché une fois l'utilisateur connecté.
 // Chaque onglet donne accès à un domaine fonctionnel de l'application.
 function MainTabs() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -42,7 +45,7 @@ function MainTabs() {
         tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_500Medium', marginTop: 1, marginBottom: 4 },
         tabBarIconStyle: { marginTop: 4 },
         tabBarItemStyle: { minWidth: 56 },
-        tabBarStyle: { height: 80, paddingHorizontal: 20, paddingTop: 4, paddingBottom: 4, backgroundColor: '#FFFFFF', borderTopColor: 'rgba(226,226,232,0.3)' },
+        tabBarStyle: { height: 64 + insets.bottom, paddingHorizontal: 20, paddingTop: 4, paddingBottom: Math.max(insets.bottom, 4), backgroundColor: '#FFFFFF', borderTopColor: '#E2E2E8' },
       })}
     >
       <Tab.Screen name="Board" component={BoardScreen} options={{ title: 'Board' }} />
