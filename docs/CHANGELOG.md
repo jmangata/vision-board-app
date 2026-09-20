@@ -1,5 +1,33 @@
 # Changelog — Fonctionnalités
 
+## Documentation interne de l’ensemble du client mobile
+
+### Contexte
+Le code Expo devait être compréhensible pendant la maintenance et la soutenance, au-delà de la documentation fonctionnelle déjà présente dans `docs/`.
+
+### Erreur ou comportement attendu
+Plusieurs composants et écrans récents ne décrivaient pas encore leur responsabilité, leurs appels API ou leurs choix natifs. Les commentaires devaient expliquer les fonctions et sections importantes sans paraphraser chaque ligne.
+
+### Cause
+La priorité précédente portait sur la finalisation fonctionnelle et la compilation Android ; la documentation interne n’avait pas encore été homogénéisée sur tout le dossier `mobile`.
+
+### Solution apportée
+- Fichiers concernés : `mobile/App.js`, `mobile/src/components/*.js`, `mobile/src/navigation/AppNavigator.js`, `mobile/src/screens/*.js`, `mobile/src/services/*.js`, `docs/CHANGELOG.md`, `docs/conception.md`.
+- Ajout de commentaires ciblés sur les responsabilités des composants, le chargement au focus, la fusion des badges, la validation du profil, les confirmations destructives, les mutations d’objectif et la Safe Area.
+- Documentation explicite des quatre fichiers de composants encore réservés à de futures extractions, afin d’éviter qu’ils soient confondus avec les implémentations actives.
+- Conservation des commentaires existants et absence de commentaires ligne par ligne inutiles.
+
+### Vérification
+- La recherche `^\\s*//` dans `mobile/**/*.js` recense 109 commentaires ciblés ; chaque module actif décrit au minimum sa responsabilité ou ses traitements non évidents.
+- `cd mobile && npx expo export --platform android --output-dir dist-check` : export Android réussi.
+- `git diff --check` : aucune erreur de formatage bloquante.
+
+### Points de vigilance
+- Les fichiers JSON ne permettent pas les commentaires ; leur rôle est documenté dans `docs/conception.md`.
+- Un commentaire doit rester synchronisé avec le code. Les descriptions devenues obsolètes doivent être mises à jour lors de la même modification fonctionnelle.
+
+---
+
 ## Finalisation des écrans principaux de l’application mobile
 
 ### Contexte

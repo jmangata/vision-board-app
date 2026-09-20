@@ -1,3 +1,4 @@
+// Catalogue mobile des badges : fusionne la liste publique avec les gains du compte connecté.
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -12,6 +13,7 @@ export default function BadgesScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Charge les deux collections en parallèle puis conserve les identifiants obtenus dans un Set.
   const loadBadges = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -28,6 +30,7 @@ export default function BadgesScreen() {
 
   useFocusEffect(useCallback(() => { loadBadges(); }, [loadBadges]));
 
+  // En-tête de FlatList : introduction et compteur calculé à partir des données fusionnées.
   const header = (
     <View style={styles.introduction}>
       <Text style={styles.intro}>Atteins des objectifs et crée des habitudes pour débloquer de nouveaux badges.</Text>

@@ -1,3 +1,4 @@
+// Tableau de bord mobile : agrège les statistiques du compte et gère les états réseau.
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,6 +18,7 @@ export default function DashboardScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Recharge les indicateurs à chaque retour sur l'onglet pour refléter les objectifs récents.
   const loadStats = useCallback(async () => {
     setLoading(true);
     setError('');

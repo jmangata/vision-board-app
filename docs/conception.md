@@ -2,6 +2,13 @@
 
 ## Architecture de l’application mobile Expo
 
+### Convention de documentation interne
+
+Chaque module JavaScript mobile comporte des commentaires centrés sur l’intention : responsabilité d’un composant, cycle de chargement, appel réseau, validation, interaction native ou contrainte de sécurité. Les styles et expressions évidentes ne sont pas commentés ligne par ligne afin de préserver la lisibilité.
+
+Les fichiers `app.json`, `package.json` et `package-lock.json` restent sans commentaires, car JSON ne les accepte pas. `app.json` décrit la configuration Expo et ses plugins, `package.json` les commandes et dépendances directes, et le lockfile garantit une installation reproductible. Les composants vides réservés à une extraction future sont signalés explicitement ; les implémentations actives restent dans les écrans mentionnés par leurs commentaires.
+
+
 ### Contexte
 Le client mobile reprend le design responsive React tout en utilisant les primitives natives nécessaires aux Safe Areas, au clavier, au tactile et à la navigation.
 

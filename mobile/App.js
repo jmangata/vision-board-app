@@ -1,4 +1,4 @@
-  // Point d'entrée principal de l'application mobile.
+// Point d'entrée principal de l'application mobile.
 // Il enrobe toute la navigation dans le fournisseur d'authentification
 // afin que chaque écran puisse accéder au token et aux actions login/logout.
 import { useEffect } from 'react';

@@ -61,10 +61,12 @@ export default function GoalDetailScreen() {
     navigation.setOptions({ headerShown: false });
   }, [navigation]);
 
+  // Recharge l'objectif complet après chaque mutation d'image ou d'étape.
   const fetchGoal = () => {
     api.get(`/goals/${id}`).then((res) => setGoal(res.data));
   };
 
+  // Applique une URL choisie manuellement ou depuis Unsplash, puis referme le sélecteur.
   const applyImage = async (imageUrl) => {
     setImageError('');
     try {
@@ -93,6 +95,7 @@ export default function GoalDetailScreen() {
     fetchGoal();
   }, [id]);
 
+  // Normalise le libellé avant de créer l'étape et de rafraîchir la progression.
   const handleAddStep = async () => {
     setStepError('');
     const title = newStep.trim();
@@ -141,6 +144,7 @@ export default function GoalDetailScreen() {
     );
   };
 
+  // Protège la suppression définitive de l'objectif derrière une confirmation native.
   const handleDelete = () => {
     Alert.alert(
       'Confirmer',

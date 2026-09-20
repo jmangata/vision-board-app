@@ -23,6 +23,7 @@ const Tab = createBottomTabNavigator();
 // Groupe d'onglets affiché une fois l'utilisateur connecté.
 // Chaque onglet donne accès à un domaine fonctionnel de l'application.
 function MainTabs() {
+  // Ajoute l'inset système à la hauteur de la tab bar sans réduire sa zone de contenu.
   const insets = useSafeAreaInsets();
 
   return (

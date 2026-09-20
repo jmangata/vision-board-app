@@ -1,3 +1,5 @@
+// Carte de badge alignée sur le composant web : icône, libellé, description et statut.
+// Un badge non obtenu conserve son contenu lisible tout en étant visuellement atténué.
 import { StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 

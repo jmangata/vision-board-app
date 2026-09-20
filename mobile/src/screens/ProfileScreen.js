@@ -1,3 +1,4 @@
+// Profil mobile : consultation, édition sécurisée, liens d'aide et suppression RGPD du compte.
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -23,6 +24,7 @@ export default function ProfileScreen() {
   const [deletePassword, setDeletePassword] = useState('');
   const { logout } = useAuth();
 
+  // Recharge le profil à chaque focus afin de synchroniser les informations et les compteurs.
   const loadProfile = useCallback(async () => {
     setLoading(true);
     setError('');
@@ -47,6 +49,8 @@ export default function ProfileScreen() {
     setForm({ ...emptyForm, firstname: user.firstname || '', email: user.email || '' });
   };
 
+  // Valide localement les champs avant d'envoyer uniquement les données acceptées par l'API.
+  // Les mots de passe restent dans l'état du formulaire et ne sont jamais affichés ni journalisés.
   const saveProfile = async () => {
     const firstname = form.firstname.trim();
     const email = form.email.trim();
@@ -80,6 +84,7 @@ export default function ProfileScreen() {
     }
   };
 
+  // Exige le mot de passe puis délègue la confirmation irréversible à l'alerte native.
   const confirmDelete = () => {
     if (!deletePassword) return setError('Entre ton mot de passe pour confirmer la suppression.');
     Alert.alert('Supprimer le compte', 'Cette action est définitive : tous tes objectifs, étapes, rappels et badges seront effacés.', [
@@ -144,6 +149,7 @@ export default function ProfileScreen() {
   );
 }
 
+// Ligne d'action réutilisée pour conserver les mêmes dimensions, icônes et états de couleur.
 function MenuRow({ icon, label, onPress, danger, muted }) {
   const color = danger ? '#93000A' : muted ? '#737781' : '#2E5797';
   return <TouchableOpacity style={styles.row} onPress={onPress}><MaterialIcons name={icon} size={22} color={color} /><Text style={[styles.rowText, danger && styles.dangerRowText]}>{label}</Text><MaterialIcons name="chevron-right" size={22} color="#737781" style={styles.chevron} /></TouchableOpacity>;

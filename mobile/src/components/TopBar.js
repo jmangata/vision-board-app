@@ -1,7 +1,10 @@
+// Barre supérieure partagée par les écrans principaux et secondaires.
+// Elle centralise la Safe Area, le centrage du titre et les cibles tactiles Material.
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+// Les emplacements latéraux restent réservés même sans action afin que le titre ne se décale pas.
 export default function TopBar({ title, leftIcon, onLeftPress, rightIcon, onRightPress, rightColor = '#0D3F7E' }) {
   const insets = useSafeAreaInsets();
 
