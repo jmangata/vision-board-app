@@ -139,7 +139,10 @@ export default function BoardScreen({ navigation }) {
     if (!token) return;
     api.get('/goals')
       .then((res) => setGoals(res.data))
-      .catch((err) => console.error('Erreur lors du chargement des objectifs', err));
+      .catch((err) => {
+        // Le client API traite globalement les 401 en fermant la session expirée.
+        if (err.response?.status !== 401) console.error('Erreur lors du chargement des objectifs', err);
+      });
   };
 
   // Restaure une seule fois le message préparé par la connexion ou l'inscription.

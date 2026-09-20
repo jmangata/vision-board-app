@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { setUnauthorizedHandler } from '../services/api';
 
 // Contexte React partagé entre tous les écrans de l'application.
 // Il centralise l'état d'authentification (token) et l'état de rechargement initial.
@@ -18,6 +19,12 @@ export function AuthProvider({ children }) {
       setToken(t);
       setLoading(false);
     });
+  }, []);
+
+  // Revient immédiatement à la connexion lorsqu'une requête authentifiée reçoit un 401.
+  useEffect(() => {
+    setUnauthorizedHandler(() => setToken(null));
+    return () => setUnauthorizedHandler(null);
   }, []);
 
   // Persiste le token reçu du backend puis met à jour l'état React.

@@ -1,5 +1,35 @@
 ---
 
+### 23. Session mobile conservée après un refus JWT 401
+
+### Contexte
+Au démarrage dans Expo Go, Board restaurait le JWT présent dans AsyncStorage puis appelait `GET /api/goals`.
+
+### Erreur constatée
+La console affichait `Erreur lors du chargement des objectifs [AxiosError: Request failed with status code 401]` et l’application restait sur l’espace authentifié. Le comportement attendu est de supprimer la session refusée et de revenir à la connexion.
+
+### Cause
+Le backend a rejeté le JWT restauré. Un token peut être expiré, signé avec un ancien `JWT_SECRET`, associé à un compte supprimé ou autrement invalide. Le client Axios injectait bien ce token, mais ne traitait que les requêtes sortantes : aucun intercepteur de réponse ne supprimait une session refusée.
+
+### Solution
+- Fichiers concernés : `mobile/src/services/api.js`, `mobile/src/context/AuthContext.js`, `mobile/src/screens/BoardScreen.js`, `docs/TROUBLESHOOTING.md`.
+- Ajout d’un intercepteur Axios qui traite uniquement les réponses 401 provenant d’une requête ayant envoyé un header `Authorization`.
+- Suppression du token AsyncStorage et notification du contexte d’authentification, qui remonte automatiquement l’écran de connexion.
+- Le formulaire de connexion n’est pas concerné par cette déconnexion globale, car ses requêtes ne portent pas encore de token Bearer.
+- Board ne journalise plus comme erreur de chargement un 401 déjà pris en charge globalement.
+
+### Vérification
+- Relancer depuis `mobile` avec `npx expo start`, puis présenter un token expiré ou invalide : l’application doit revenir à la connexion.
+- Se reconnecter et vérifier que `GET /api/goals` répond 200 et que les objectifs s’affichent.
+- Exécuter `npx expo export --platform android --output-dir dist-check`.
+
+### Points de vigilance
+- Lancer Expo depuis `mobile`, pas depuis la racine du monorepo où le package `expo` n’est pas installé.
+- Un changement de `JWT_SECRET` invalide toutes les sessions existantes ; les utilisateurs devront se reconnecter.
+- Le warning Expo Go sur le push distant est indépendant de l’authentification et non bloquant pour les notifications locales.
+
+---
+
 ### 22. Expo Doctor signale trois écarts de patch SDK 57
 
 ### Contexte
