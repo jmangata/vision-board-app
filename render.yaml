@@ -95,6 +95,8 @@ services:
         sync: false                 # Utilisateur SMTP
       - key: SMTP_PASS
         sync: false                 # Mot de passe SMTP
+      - key: MAIL_FROM
+        sync: false                 # Adresse expéditrice (expéditeur vérifié Mailjet)
 
       # -----------------------------------------------------------------------
       # CORS et liens emails

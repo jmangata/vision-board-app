@@ -13,9 +13,13 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Adresse d'expédition : doit correspondre à un expéditeur vérifié chez le
+// fournisseur SMTP (Mailjet, Brevo...). Configurable via MAIL_FROM.
+const mailFrom = `"Vision Board" <${process.env.MAIL_FROM || 'no-reply@visionboard.app'}>`;
+
 export async function sendReminderEmail(to, goalTitle) {
   await transporter.sendMail({
-    from: '"Vision Board" <rappels@visionboard.app>',
+    from: mailFrom,
     to,
     subject: 'Rappel : votre objectif vous attend',
     html: `
@@ -30,7 +34,7 @@ export async function sendReminderEmail(to, goalTitle) {
 // L'URL contient le token en clair ; en base seul son hash SHA-256 est conservé.
 export async function sendPasswordResetEmail(to, resetUrl) {
   await transporter.sendMail({
-    from: '"Vision Board" <no-reply@visionboard.app>',
+    from: mailFrom,
     to,
     subject: 'Réinitialisation de votre mot de passe',
     html: `

@@ -1053,3 +1053,34 @@ Le filtre `Autre` de `frontend/src/pages/Board.jsx` regroupe désormais tous les
 Dans `mobile/src/screens/CreateGoalScreen.js`, une option `Autre` affiche un champ de saisie. Lors de la création, l'application réutilise une catégorie portant déjà ce nom ou la crée via `mobile/src/services/goalService.js`, puis associe l'objectif à son identifiant.
 
 Vérification complémentaire : créer un objectif web puis mobile avec une catégorie personnalisée et confirmer qu'il apparaît sous le filtre `Autre` de la page Objectifs.
+
+---
+
+## Expéditeur email configurable (MAIL_FROM) et script de test SMTP
+
+### Contexte
+Passage à Mailjet comme fournisseur SMTP. Mailjet refuse d'envoyer depuis une
+adresse dont le domaine n'est pas vérifié (`no-reply@visionboard.app`).
+
+### Erreur constatée
+Les emails auraient été rejetés par Mailjet (sender non vérifié), et aucun moyen
+simple de tester la config SMTP existait.
+
+### Cause
+L'adresse `from` était codée en dur dans `emailService.js` avec un domaine
+fictif non vérifiable.
+
+### Solution
+- `backend/src/services/emailService.js` : expéditeur lu depuis `MAIL_FROM`
+  (fallback `no-reply@visionboard.app`), partagé par les deux fonctions d'envoi.
+- `backend/.env.example` + `render.yaml` : variable `MAIL_FROM` documentée.
+- `backend/test-email.js` : `node test-email.js [dest]` envoie un email de
+  reset et un rappel de test pour valider la config en une commande.
+
+### Vérification
+`cd backend && node test-email.js mon@email.com` → `Emails de test envoyés`
+et les deux mails arrivent dans la boîte.
+
+### Points de vigilance
+- `MAIL_FROM` doit être un expéditeur vérifié dans Mailjet, sinon erreur 400.
+- À renseigner aussi sur Render (`visionboard-api` → Environment).
