@@ -30,7 +30,7 @@ function Register() {
     try {
       const { data } = await register(form);
       localStorage.setItem('token', data.token);
-      prepareWelcome(data.user.firstname);
+      prepareWelcome(data.user.firstname, true);
       window.location.replace('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur d\'inscription');

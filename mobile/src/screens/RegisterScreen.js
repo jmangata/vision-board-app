@@ -39,8 +39,8 @@ export default function RegisterScreen({ navigation }) {
     setError('');
     try {
       const { data } = await register({ ...form, firstname: form.firstname.trim(), email: form.email.trim() });
-      // Prépare le message consommé une seule fois par la page Objectifs.
-      await AsyncStorage.setItem('pendingWelcome', JSON.stringify({ firstname: data.user.firstname, variant: Math.floor(Math.random() * 6) }));
+      // Prépare le message de bienvenue première connexion consommé une seule fois par la page Objectifs.
+      await AsyncStorage.setItem('pendingWelcome', JSON.stringify({ firstname: data.user.firstname, variant: Math.floor(Math.random() * 6), isRegister: true }));
       await login(data.token);
     } catch (err) {
       setError(err.response?.data?.message || (err.code === 'ECONNABORTED'

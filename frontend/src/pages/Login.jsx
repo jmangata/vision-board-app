@@ -13,7 +13,7 @@ function Login() {
     try {
       const { data } = await login(form);
       localStorage.setItem('token', data.token);
-      prepareWelcome(data.user.firstname);
+      prepareWelcome(data.user.firstname, false);
       window.location.replace('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');

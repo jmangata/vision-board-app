@@ -5,7 +5,7 @@ import api from './api.js';
 export const register = (data) => api.post('/auth/register', data);
 export const login = (data) => api.post('/auth/login', data);
 
-export const prepareWelcome = (firstname) => {
+export const prepareWelcome = (firstname, isRegister = false) => {
   const messageCount = 6;
   const previousVariant = Number(localStorage.getItem('welcomeVariant'));
   const offset = Math.floor(Math.random() * (messageCount - 1)) + 1;
@@ -14,5 +14,5 @@ export const prepareWelcome = (firstname) => {
     : Math.floor(Math.random() * messageCount);
 
   localStorage.setItem('welcomeVariant', String(variant));
-  localStorage.setItem('pendingWelcome', JSON.stringify({ firstname, variant }));
+  localStorage.setItem('pendingWelcome', JSON.stringify({ firstname, variant, isRegister }));
 };

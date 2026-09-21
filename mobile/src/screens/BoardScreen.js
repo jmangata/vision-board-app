@@ -30,6 +30,15 @@ const welcomeMessages = [
   (firstname) => `C’est un plaisir de te retrouver, ${firstname} ! Continue sur cette belle lancée.`,
 ];
 
+const firstTimeMessages = [
+  (firstname) => `Bienvenue dans Vision Board, ${firstname} ! Ton voyage commence maintenant.`,
+  (firstname) => `Bonjour ${firstname}, ravis de t'accueillir ! Crée ton premier objectif dès aujourd'hui.`,
+  (firstname) => `C'est parti, ${firstname} ! Ta vision board t'attend.`,
+  (firstname) => `Heureux de te compter parmi nous, ${firstname} ! Chaque grand rêve commence par un premier pas.`,
+  (firstname) => `Bienvenue ${firstname} ! Prends une minute pour imaginer ce que tu vas accomplir.`,
+  (firstname) => `Ton aventure débute ici, ${firstname}. Transforme tes rêves en objectifs concrets.`,
+];
+
 // Conserve les URL distantes et complète les chemins relatifs avec l'adresse de l'API.
 const imageUri = (url) => {
   if (!url) return null;
@@ -224,9 +233,11 @@ export default function BoardScreen({ navigation }) {
           {welcome && (
             <View style={styles.welcome}>
               <View style={styles.welcomeContent}>
-                <Text style={styles.welcomeTitle}>Un nouveau pas vers ta vision</Text>
+                <Text style={styles.welcomeTitle}>
+                  {welcome.isRegister ? 'Bienvenue dans Vision Board' : 'Un nouveau pas vers ta vision'}
+                </Text>
                 <Text style={styles.welcomeMsg}>
-                  {welcomeMessages[welcome.variant % welcomeMessages.length](welcome.firstname)}
+                  {(welcome.isRegister ? firstTimeMessages : welcomeMessages)[welcome.variant % welcomeMessages.length](welcome.firstname)}
                 </Text>
               </View>
               <Ionicons name="sparkles" size={64} color="rgba(255,255,255,0.12)" style={styles.welcomeIcon} />

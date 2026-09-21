@@ -25,8 +25,8 @@ export default function LoginScreen({ navigation }) {
     setError('');
     try {
       const { data } = await loginApi({ email: form.email.trim(), password: form.password });
-      // Prépare le message consommé une seule fois par la page Objectifs.
-      await AsyncStorage.setItem('pendingWelcome', JSON.stringify({ firstname: data.user.firstname, variant: Math.floor(Math.random() * 6) }));
+      // Prépare le message de retour consommé une seule fois par la page Objectifs.
+      await AsyncStorage.setItem('pendingWelcome', JSON.stringify({ firstname: data.user.firstname, variant: Math.floor(Math.random() * 6), isRegister: false }));
       await login(data.token);
     } catch (err) {
       setError(err.response?.data?.message || 'Erreur de connexion');

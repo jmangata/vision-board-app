@@ -17,6 +17,15 @@ const welcomeMessages = [
   (firstname) => `C’est un plaisir de te retrouver, ${firstname} ! Continue sur cette belle lancée.`,
 ];
 
+const firstTimeMessages = [
+  (firstname) => `Bienvenue dans Vision Board, ${firstname} ! Ton voyage commence maintenant.`,
+  (firstname) => `Bonjour ${firstname}, ravis de t'accueillir ! Crée ton premier objectif dès aujourd'hui.`,
+  (firstname) => `C'est parti, ${firstname} ! Ta vision board t'attend.`,
+  (firstname) => `Heureux de te compter parmi nous, ${firstname} ! Chaque grand rêve commence par un premier pas.`,
+  (firstname) => `Bienvenue ${firstname} ! Prends une minute pour imaginer ce que tu vas accomplir.`,
+  (firstname) => `Ton aventure débute ici, ${firstname}. Transforme tes rêves en objectifs concrets.`,
+];
+
 function Board() {
   const [goals, setGoals] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -105,9 +114,11 @@ function Board() {
         {welcome && (
           <div className="relative mb-7 overflow-hidden rounded-2xl bg-primary-container px-5 py-5 text-white shadow-lg md:max-w-2xl">
             <div className="relative z-10 pr-8">
-              <p className="text-lg font-bold">Un nouveau pas vers ta vision</p>
+              <p className="text-lg font-bold">
+                {welcome.isRegister ? 'Bienvenue dans Vision Board' : 'Un nouveau pas vers ta vision'}
+              </p>
               <p className="mt-1 text-sm leading-5 text-white/85">
-                {welcomeMessages[welcome.variant % welcomeMessages.length](welcome.firstname)}
+                {(welcome.isRegister ? firstTimeMessages : welcomeMessages)[welcome.variant % welcomeMessages.length](welcome.firstname)}
               </p>
             </div>
             <span className="material-symbols-outlined absolute -bottom-3 -right-2 text-7xl text-white/10">auto_awesome</span>
