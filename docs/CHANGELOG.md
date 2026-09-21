@@ -1,5 +1,43 @@
 # Changelog — Fonctionnalités
 
+## Migration de l'hébergement de Render vers Railway
+
+### Contexte
+Le projet Vision Board était initialement déployé sur Render via un Blueprint (`render.yaml`) et un workflow GitHub Actions utilisant des deploy hooks. L'objectif était de basculer l'hébergement sur Railway tout en conservant une base PostgreSQL managée, un backend Node.js/Express/Prisma et un frontend React/Vite statique.
+
+### Erreur ou comportement attendu
+Avant la migration, la configuration Railway était partielle : le frontend disposait d'un `railway.toml` sans `publishDirectory`, ce qui empêchait Railway de servir le build Vite. Le backend utilisait un `buildCommand` implicite qui ne garantissait pas une installation reproductible (`npm ci`). Le déploiement continu reposait sur Render (`cd.yml`) et n'était donc pas adapté à Railway. Enfin, l'application mobile référençait encore l'URL Render pour la réinitialisation du mot de passe et le lien web du profil.
+
+### Cause
+- `frontend/railway.toml` ne contenait que la section `[build]`, sans section `[deploy]`.
+- `backend/railway.toml` ne précisait pas `npm ci` et laissait Nixpacks gérer l'installation par défaut.
+- `.github/workflows/cd.yml` et `render.yaml` étaient spécifiques à Render.
+- Les liens web de `mobile/src/screens/LoginScreen.js` et `mobile/src/screens/ProfileScreen.js` étaient hardcodés vers `visionboard-frontend.onrender.com`.
+
+### Solution apportée
+- Fichiers concernés : `frontend/railway.toml`, `backend/railway.toml`, `.github/workflows/cd-railway.yml`, `.github/workflows/cd.yml` (supprimé), `render.yaml` (supprimé), `mobile/src/screens/LoginScreen.js`, `mobile/src/screens/ProfileScreen.js`, `docs/RAILWAY.md`, `docs/CHANGELOG.md`.
+- `frontend/railway.toml` : ajout de `npm ci` au build et de la section `[deploy]` avec `publishDirectory = "dist"`.
+- `backend/railway.toml` : build reproductible via `npm ci && npx prisma generate && npx prisma migrate deploy`, conservation de `startCommand = "node index.js"` et du healthcheck `/api/health`.
+- `.github/workflows/cd-railway.yml` : nouveau workflow de CD déclenché sur `main`, réutilisant la CI, puis déployant le backend puis le frontend via la CLI Railway (`railway up --detach`).
+- Suppression de `render.yaml` et de `.github/workflows/cd.yml` car Render n'est plus utilisé.
+- Mise à jour des liens web mobile vers `https://visionboard-frontend.up.railway.app`.
+- Mise à jour complète de `docs/RAILWAY.md` avec la procédure de déploiement Railway, la gestion des secrets, la configuration du CD et les points de vigilance.
+
+### Vérification
+- Validation YAML du workflow `.github/workflows/cd-railway.yml` : OK.
+- `backend/railway.toml` et `frontend/railway.toml` sont conformes à la syntaxe attendue par Railway.
+- La CI (`ci.yml`) n'a pas été modifiée et reste fonctionnelle.
+- Les variables d'environnement documentées dans `docs/RAILWAY.md` couvrent tous les secrets applicatifs.
+
+### Points de vigilance
+- `DATABASE_URL` doit être configuré dans Railway **avant** le premier déploiement du backend, car les migrations Prisma s'exécutent au build (`npx prisma migrate deploy`).
+- Le token `RAILWAY_TOKEN` doit être ajouté aux secrets GitHub pour que le CD fonctionne.
+- Les URLs `visionboard-api.up.railway.app` et `visionboard-frontend.up.railway.app` sont des exemples ; adapte-les aux noms réels de tes services Railway.
+- Si l'auto-deploy natif Railway est activé, il peut entrer en concurrence avec le workflow CD. Il est recommandé de le désactiver pour les deux services.
+- Le workflow CD déploie le backend avant le frontend via `needs: [ci, deploy-backend]`.
+
+---
+
 ## Mise à jour des dépendances vulnérables avant déploiement Render
 
 ### Contexte

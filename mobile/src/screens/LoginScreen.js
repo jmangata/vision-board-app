@@ -51,7 +51,7 @@ export default function LoginScreen({ navigation }) {
           <TextInput style={styles.input} placeholder="name@example.com" placeholderTextColor="#737781" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} value={form.email} onChangeText={(email) => setForm({ ...form, email })} editable={!loading} />
           <Text style={styles.label}>Mot de passe</Text>
           <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor="#737781" secureTextEntry value={form.password} onChangeText={(password) => setForm({ ...form, password })} editable={!loading} onSubmitEditing={handleSubmit} />
-          <TouchableOpacity onPress={() => Linking.openURL('https://visionboard-frontend.onrender.com/forgot-password')}>
+          <TouchableOpacity onPress={() => Linking.openURL('https://visionboard-frontend.up.railway.app/forgot-password')}>
             <Text style={styles.forgotLink}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, loading && styles.disabled]} onPress={handleSubmit} disabled={loading}>

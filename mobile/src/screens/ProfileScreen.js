@@ -7,7 +7,7 @@ import TopBar from '../components/TopBar';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://visionboard-frontend.onrender.com';
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'https://visionboard-frontend.up.railway.app';
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d\s]).{12,}$/;
 const emptyForm = { firstname: '', email: '', currentPassword: '', newPassword: '', confirmPassword: '' };
