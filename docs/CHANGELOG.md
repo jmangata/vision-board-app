@@ -1,5 +1,37 @@
 # Changelog — Fonctionnalités
 
+## Amélioration du détail d’objectif mobile
+
+### Contexte
+L’écran mobile de détail permettait de changer l’image et de gérer les étapes, mais certaines interactions restaient peu adaptées à un usage tactile.
+
+### Erreur ou comportement attendu
+Le changement d’image demandait de saisir une URL, la suppression d’étape utilisait le texte abrégé `Suppr`, et les titres d’étapes étaient limités à une ligne. L’utilisateur doit pouvoir importer une photo native, identifier immédiatement l’action de suppression et lire entièrement une étape longue sans dégrader la carte.
+
+### Cause
+Le détail mobile reprenait encore un contrôle d’URL hérité du parcours web et imposait `numberOfLines={1}` aux étapes. L’action de suppression n’utilisait pas l’iconographie Material du reste de l’application.
+
+### Solution apportée
+- Fichiers concernés : `mobile/src/screens/GoalDetailScreen.js`, `docs/CHANGELOG.md`.
+- Remplacement du champ URL par Expo Image Picker, réutilisation de `uploadImage`, puis association de l’URL Cloudinary retournée à l’objectif.
+- Conservation de la recherche Unsplash comme alternative à l’import local.
+- Remplacement de `Suppr` par une icône Material `delete-outline`, avec cible tactile de 48 px, retour d’opacité, libellé d’accessibilité et confirmation native existante.
+- Suppression de la limite à une ligne et ajout d’un interligne adapté pour afficher entièrement les étapes longues.
+
+### Vérification
+- Depuis le détail mobile, choisir une photo, accepter la permission, vérifier son upload puis son affichage sur l’objectif.
+- Rechercher et sélectionner une image Unsplash pour vérifier que l’alternative reste fonctionnelle.
+- Créer une étape longue, vérifier son retour à la ligne, puis utiliser l’icône de suppression et confirmer l’alerte.
+- `cd mobile && npx expo export --platform android --output-dir dist-check` : export Android réussi.
+- `git diff --check` : aucune erreur de formatage bloquante.
+
+### Points de vigilance
+- L’import nécessite la permission de photothèque et un backend configuré pour l’upload Cloudinary.
+- Une étape très longue augmente naturellement la hauteur de sa carte ; sa largeur et l’action de suppression restent fixes.
+- La suppression reste volontairement protégée par `Alert.alert` afin d’éviter les gestes accidentels.
+
+---
+
 ## Documentation interne de l’ensemble du client mobile
 
 ### Contexte

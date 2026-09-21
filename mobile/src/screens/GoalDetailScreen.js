@@ -12,9 +12,10 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../services/api';
-import { createStep, searchUnsplash } from '../services/goalService';
+import { createStep, searchUnsplash, uploadImage } from '../services/goalService';
 import TopBar from '../components/TopBar';
 
 const iconMap = {
@@ -53,7 +54,7 @@ export default function GoalDetailScreen() {
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [photos, setPhotos] = useState([]);
-  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [imageError, setImageError] = useState('');
   const [stepError, setStepError] = useState('');
 
@@ -66,7 +67,7 @@ export default function GoalDetailScreen() {
     api.get(`/goals/${id}`).then((res) => setGoal(res.data));
   };
 
-  // Applique une URL choisie manuellement ou depuis Unsplash, puis referme le sélecteur.
+  // Applique l'URL retournée par l'upload ou choisie dans Unsplash, puis referme le sélecteur.
   const applyImage = async (imageUrl) => {
     setImageError('');
     try {
@@ -75,9 +76,29 @@ export default function GoalDetailScreen() {
       setShowImagePicker(false);
       setPhotos([]);
       setSearchQuery('');
-      setImageUrlInput('');
     } catch (err) {
       setImageError(err.response?.data?.message || "Erreur lors de la mise à jour de l'image");
+    }
+  };
+
+  // Ouvre la photothèque native, envoie l'asset vers Cloudinary puis l'associe à l'objectif.
+  const handleImageUpload = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setImageError("Autorise l'accès aux photos pour importer une image.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, quality: 0.85 });
+    if (result.canceled) return;
+    setUploading(true);
+    setImageError('');
+    try {
+      const { data } = await uploadImage(result.assets[0]);
+      await applyImage(data.imageUrl);
+    } catch (err) {
+      setImageError(err.response?.data?.message || "Erreur lors de l'import de l'image.");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -243,22 +264,17 @@ export default function GoalDetailScreen() {
           <View style={styles.pickerCard}>
             {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
 
-            <View style={styles.urlRow}>
-              <TextInput
-                style={[styles.input, styles.urlInput]}
-                placeholder="URL de l'image"
-                value={imageUrlInput}
-                onChangeText={setImageUrlInput}
-              />
-              <TouchableOpacity
-                style={styles.smallButton}
-                onPress={() => applyImage(imageUrlInput)}
-              >
-                <Text style={styles.smallButtonText}>Appliquer</Text>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              activeOpacity={0.8}
+              style={[styles.uploadButton, uploading && styles.disabledButton]}
+              onPress={handleImageUpload}
+              disabled={uploading}
+            >
+              {uploading ? <ActivityIndicator color={colors.onPrimary} /> : <MaterialIcons name="add-a-photo" size={24} color={colors.onPrimary} />}
+              <Text style={styles.uploadButtonText}>{uploading ? 'Import en cours...' : 'Importer depuis mes photos'}</Text>
+            </TouchableOpacity>
 
-            <Text style={styles.orText}>— ou —</Text>
+            <Text style={styles.orText}>— ou rechercher sur Unsplash —</Text>
 
             <View style={styles.searchRow}>
               <TextInput
@@ -335,7 +351,6 @@ export default function GoalDetailScreen() {
                         styles.stepTitle,
                         step.isCompleted && styles.stepTitleCompleted,
                       ]}
-                      numberOfLines={1}
                     >
                       {step.title}
                     </Text>
@@ -347,10 +362,13 @@ export default function GoalDetailScreen() {
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
+                  accessibilityRole="button"
+                  accessibilityLabel={`Supprimer l'étape ${step.title}`}
+                  activeOpacity={0.6}
                   style={styles.deleteStepButton}
                   onPress={() => handleDeleteStep(step.id)}
                 >
-                  <Text style={styles.deleteStepText}>Suppr</Text>
+                  <MaterialIcons name="delete-outline" size={22} color={colors.error} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -541,10 +559,23 @@ const styles = StyleSheet.create({
     color: colors.outline,
     marginVertical: 8,
   },
-  urlRow: {
+  uploadButton: {
+    minHeight: 52,
+    borderRadius: 14,
+    backgroundColor: colors.primaryContainer,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+  },
+  uploadButtonText: {
+    color: colors.onPrimary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    opacity: 0.65,
   },
   searchRow: {
     flexDirection: 'row',
@@ -557,10 +588,6 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 15,
     color: colors.onSurface,
-  },
-  urlInput: {
-    flex: 1,
-    marginRight: 8,
   },
   searchInput: {
     flex: 1,
@@ -686,6 +713,7 @@ const styles = StyleSheet.create({
   },
   stepTitle: {
     fontSize: 15,
+    lineHeight: 21,
     fontWeight: '500',
     color: colors.onSurface,
   },
@@ -699,11 +727,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   deleteStepButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 16,
-  },
-  deleteStepText: {
-    color: colors.outline,
-    fontSize: 13,
+    width: 48,
+    minHeight: 52,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: StyleSheet.hairlineWidth,
+    borderLeftColor: colors.outlineVariant,
   },
 });
