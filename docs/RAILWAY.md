@@ -2,6 +2,16 @@
 
 Ce guide correspond à la configuration Railway actuelle du projet Vision Board. Il remplace les anciens fichiers `railway.toml`, désormais dépréciés et ignorés par les nouveaux services Railway.
 
+## Déploiement de production validé
+
+- Frontend : `https://web-production-248fd.up.railway.app`
+- API : `https://api-production-9f993.up.railway.app`
+- Healthcheck : `https://api-production-9f993.up.railway.app/api/health`
+- Projet Railway : `vision-board-app`
+- Région : `europe-west4-drams3a`
+- Vérification : 4/4 contrôles automatisés réussis
+- Test métier : inscription 201, 5 catégories seedées, suppression RGPD 204
+
 ## Architecture déployée
 
 | Ressource Railway | Code source | Build / exécution |
@@ -136,11 +146,11 @@ Le Dockerfile la reçoit en `ARG`, puis Vite l'intègre au bundle. La modificati
 | Phase | Commande |
 |---|---|
 | Build | `npm run prisma:generate` |
-| Pre-deploy | `npm run migrate:deploy` |
+| Pre-deploy | `npm run migrate:deploy && npm run seed` |
 | Start | `node index.js` |
 | Healthcheck | `/api/health` |
 
-Les migrations ne tournent plus pendant le build. Elles s'exécutent en **pre-deploy**, lorsque `DATABASE_URL` et le réseau privé sont disponibles. Si une migration échoue, Railway interrompt le nouveau déploiement et l'ancienne instance reste active.
+Les migrations ne tournent plus pendant le build. Elles s'exécutent en **pre-deploy**, lorsque `DATABASE_URL` et le réseau privé sont disponibles. Le seed idempotent exécute ensuite des `upsert` pour garantir la présence des catégories et badges de référence. Si une migration ou le seed échoue, Railway interrompt le nouveau déploiement et l'ancienne instance reste active.
 
 Les scripts passent par `npm run` plutôt que `npx`. Sans binaire local, `npx` peut télécharger une version inattendue depuis le registre ; ce comportement a été constaté avec `prisma@8.0.0-rc.15`. `npm run` garantit l'utilisation de la version Prisma verrouillée dans le lockfile.
 

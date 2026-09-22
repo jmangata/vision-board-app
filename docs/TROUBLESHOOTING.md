@@ -24,7 +24,7 @@ La configuration initiale reprenait à tort des concepts propres à Render (site
 - Fichiers modifiés : `backend/package.json`, `.github/workflows/ci.yml`, `mobile/src/screens/LoginScreen.js`, `mobile/src/screens/ProfileScreen.js`, `docs/RAILWAY.md`, `docs/TROUBLESHOOTING.md`, `docs/CHANGELOG.md`.
 - Migration vers Railway Infrastructure as Code, système officiellement supporté : PostgreSQL, API et frontend sont décrits dans un fichier projet unique.
 - Frontend servi par un conteneur Caddy multi-stage avec fallback SPA et healthcheck.
-- Migrations déplacées en pre-deploy, lorsque `DATABASE_URL` et le réseau privé sont disponibles.
+- Migrations déplacées en pre-deploy, lorsque `DATABASE_URL` et le réseau privé sont disponibles, puis exécution du seed idempotent pour initialiser catégories et badges.
 - Remplacement de `npx prisma` par des scripts `npm run`, qui résolvent la version du lockfile.
 - Activation de Wait for CI (`checkSuites`) au lieu d'un workflow de déploiement concurrent.
 - Scripts Node multiplateformes pour créer les domaines, envoyer les secrets par stdin et vérifier le déploiement.
@@ -39,6 +39,9 @@ La configuration initiale reprenait à tort des concepts propres à Render (site
 - `npm run railway:secrets -- --dry-run` détecte 11 secrets sans afficher leurs valeurs.
 - Les trois scripts `.mjs` passent `node --check`.
 - `npm run railway:bootstrap` s'arrête proprement avec l'instruction `npm run railway:login` tant que l'utilisateur n'est pas authentifié.
+- Déploiements Railway réels : `api` et `web` en statut `SUCCESS`.
+- Logs pre-deploy : 3 migrations présentes, aucune migration en attente, puis `Seed terminé : catégories et badges créés.`
+- Contrôles production : healthcheck, frontend, fallback SPA et CORS à 4/4 ; inscription JWT, 5 catégories et suppression RGPD 204 validées.
 
 ### Points de vigilance
 - L'application réelle ne peut pas être provisionnée sans authentification au compte Railway. Après `npm run railway:login`, exécuter `npm run railway:bootstrap`, confirmer le plan puis `npm run railway:verify`.

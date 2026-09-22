@@ -20,7 +20,7 @@ export default defineRailway(() => {
       checkSuites: true,
     }),
     build: "npm run prisma:generate",
-    preDeploy: "npm run migrate:deploy",
+    preDeploy: "npm run migrate:deploy && npm run seed",
     start: "node index.js",
     healthcheck: "/api/health",
     env: {

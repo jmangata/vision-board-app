@@ -403,7 +403,7 @@ Analyse honnête des écarts entre le projet et le référentiel.
 
 | Écart | Gravité | Action recommandée |
 |---|---|---|
-| **Application non déployée** | Élevée | BC03 demande de « préparer et documenter le déploiement » et de « contribuer à la mise en production ». La documentation et les fichiers de config existent, ce qui couvre partiellement la compétence, mais une URL en ligne à montrer au jury est nettement plus convaincant. Un déploiement Railway prend environ une heure en suivant `docs/RAILWAY.md`. |
+| **Application déployée sur Railway** | Résolu | PostgreSQL, API et frontend sont provisionnés par `.railway/railway.ts`. Wait for CI conditionne les déploiements, les migrations et le seed tournent en pre-deploy, et 4 contrôles automatiques valident santé, SPA et CORS. Preuves : `docs/RAILWAY.md` et `scripts/railway-verify.mjs`. |
 | **Aucun composant NoSQL** | Moyenne | La compétence dit « SQL **et** NoSQL ». A minima, préparer la réponse argumentée du §4.8. Idéalement, ajouter Redis pour le cache Unsplash ou le rate limiting : c'est un ajout limité qui coche la case. |
 | **Pas de tests frontend** | Moyenne | Ajouter quelques tests React Testing Library sur un composant et un parcours, pour ne pas laisser le plan de tests uniquement côté backend. |
 | **Validation des entrées dispersée** | Faible | Assumable si tu sais l'expliquer et proposer la correction. |
@@ -420,8 +420,9 @@ Analyse honnête des écarts entre le projet et le référentiel.
 - [ ] Schéma d'architecture et MCD lisibles en grand format
 
 ### Technique
-- [ ] Application accessible (URL en ligne ou environnement local qui démarre en moins de 2 min)
-- [ ] Compte de démonstration créé, base seedée avec catégories et badges
+- [x] Application accessible sur Railway : frontend et API validés par `npm run railway:verify`
+- [x] Base de production migrée et seedée avec 5 catégories et 5 badges
+- [ ] Compte de démonstration créé avec des données adaptées à la soutenance
 - [ ] Objectif de démo prérempli avec des étapes et une échéance future
 - [ ] Téléphone chargé avec l'app Expo installée et notifications autorisées
 - [ ] Captures d'écran et vidéo de secours prêtes

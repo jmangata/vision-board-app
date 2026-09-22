@@ -15,7 +15,7 @@ Railway avait été traité comme Render, alors que Railway déploie des contene
 - Fichiers concernés : `.railway/railway.ts`, `frontend/Dockerfile`, `frontend/Caddyfile`, `frontend/.dockerignore`, `backend/package.json`, `package.json`, `package-lock.json`, `scripts/railway-bootstrap.mjs`, `scripts/railway-secrets.mjs`, `scripts/railway-verify.mjs`, `.github/workflows/ci.yml`, `mobile/.env.example`, `mobile/src/screens/LoginScreen.js`, `mobile/src/screens/ProfileScreen.js`, `docs/RAILWAY.md`, `docs/TROUBLESHOOTING.md`, `docs/CHANGELOG.md` ; suppression de `backend/railway.toml`, `frontend/railway.toml` et `.github/workflows/cd-railway.yml`.
 - Infrastructure as Code crée et relie PostgreSQL, l'API et le frontend dans un seul projet Railway.
 - Caddy sert le build Vite, applique le fallback React Router et expose `/health`.
-- Les migrations Prisma s'exécutent en pre-deploy et utilisent la version verrouillée du lockfile via `npm run`.
+- Les migrations Prisma s'exécutent en pre-deploy via `npm run`, puis le seed idempotent garantit la présence des catégories et badges de référence.
 - `scripts/railway-bootstrap.mjs` automatise le projet, l'infrastructure, les domaines, les secrets, la configuration mobile et les redéploiements.
 - `scripts/railway-secrets.mjs` envoie une liste blanche de 11 secrets via stdin.
 - `scripts/railway-verify.mjs` valide l'API, le frontend, le fallback SPA et CORS.
@@ -29,7 +29,11 @@ Railway avait été traité comme Render, alors que Railway déploie des contene
 - 21 tests backend : OK.
 - Audit npm racine : 0 vulnérabilité.
 - Détection des 11 secrets en mode dry-run, sans fuite de valeur : OK.
-- Syntaxe des trois scripts Node : OK.
+- Syntaxe des scripts Node : OK.
+- CI GitHub Actions du commit `0b62b716` : succès.
+- Déploiements Railway `api` et `web` : statut `SUCCESS`.
+- Vérification de production : 4/4 contrôles réussis (healthcheck, racine frontend, fallback SPA, CORS).
+- Parcours métier de production : inscription réussie avec JWT, 5 catégories seedées, suppression du compte de test en 204.
 
 ### Points de vigilance
 - Le provisionnement réel nécessite une authentification personnelle par `npm run railway:login`, puis `npm run railway:bootstrap`.
