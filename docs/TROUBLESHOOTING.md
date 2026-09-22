@@ -1,5 +1,53 @@
 ---
 
+### 24. Configuration Railway initiale invalide et dépréciée
+
+### Contexte
+La première tentative de migration depuis Render utilisait `backend/railway.toml` et `frontend/railway.toml`. Le frontend était présenté comme un « Static Site » avec `publishDirectory = "dist"`, et les migrations Prisma étaient exécutées pendant le build du backend.
+
+### Erreur constatée
+Plusieurs erreurs empêchaient un nouveau déploiement Railway fiable :
+
+- `publishDirectory` ne fait pas partie du schéma `railway.toml` officiel ;
+- Railway ne possède pas le type « Static Site » de Render et nécessite un serveur HTTP pour le build Vite ;
+- Config as Code (`railway.toml`) est déprécié, les nouveaux services ne peuvent plus l'activer et les fichiers existants cessent d'être lus le 1er décembre 2026 ;
+- `npx prisma generate` exécuté sans dépendances locales a tenté de télécharger `prisma@8.0.0-rc.15`, incompatible avec la version 5 du projet ;
+- les services Railway n'obtiennent pas automatiquement de domaine public ;
+- les URLs mobiles codées en dur supposaient des domaines Railway prévisibles, alors que les domaines réels sont générés par la plateforme.
+
+### Cause
+La configuration initiale reprenait à tort des concepts propres à Render (site statique, publish directory, rewrite depuis le dashboard) et s'appuyait sur l'ancien système Config as Code sans vérifier la documentation Railway actuelle. Elle utilisait également `npx`, dont le repli vers le registre npm n'était pas maîtrisé.
+
+### Solution
+- Fichiers supprimés : `backend/railway.toml`, `frontend/railway.toml`, `.github/workflows/cd-railway.yml`.
+- Fichiers ajoutés : `.railway/railway.ts`, `frontend/Dockerfile`, `frontend/Caddyfile`, `frontend/.dockerignore`, `scripts/railway-bootstrap.mjs`, `scripts/railway-secrets.mjs`, `scripts/railway-verify.mjs`, `package.json`, `package-lock.json`, `mobile/.env.example`.
+- Fichiers modifiés : `backend/package.json`, `.github/workflows/ci.yml`, `mobile/src/screens/LoginScreen.js`, `mobile/src/screens/ProfileScreen.js`, `docs/RAILWAY.md`, `docs/TROUBLESHOOTING.md`, `docs/CHANGELOG.md`.
+- Migration vers Railway Infrastructure as Code, système officiellement supporté : PostgreSQL, API et frontend sont décrits dans un fichier projet unique.
+- Frontend servi par un conteneur Caddy multi-stage avec fallback SPA et healthcheck.
+- Migrations déplacées en pre-deploy, lorsque `DATABASE_URL` et le réseau privé sont disponibles.
+- Remplacement de `npx prisma` par des scripts `npm run`, qui résolvent la version du lockfile.
+- Activation de Wait for CI (`checkSuites`) au lieu d'un workflow de déploiement concurrent.
+- Scripts Node multiplateformes pour créer les domaines, envoyer les secrets par stdin et vérifier le déploiement.
+
+### Vérification
+- Build Docker frontend : réussi avec `npm ci`, Vite 6.4.3 et Caddy 2.
+- Conteneur local : `/`, `/health` et `/goals/123` renvoient 200 ; l'asset JS renvoie `text/javascript`, pas `index.html`.
+- Le bundle Vite contient bien la valeur de test `VITE_API_URL` et ne contient plus le fallback `localhost:5000`.
+- Backend : `npm run prisma:generate` utilise Prisma 5.22.0 du lockfile.
+- Tests backend : 3 fichiers et 21 tests passent.
+- `npm audit` à la racine : 0 vulnérabilité. La CLI npm vulnérable a été remplacée par le binaire officiel Railway 5.57.0, dont le SHA-256 est vérifié avant installation locale dans `.tools/`.
+- `npm run railway:secrets -- --dry-run` détecte 11 secrets sans afficher leurs valeurs.
+- Les trois scripts `.mjs` passent `node --check`.
+- `npm run railway:bootstrap` s'arrête proprement avec l'instruction `npm run railway:login` tant que l'utilisateur n'est pas authentifié.
+
+### Points de vigilance
+- L'application réelle ne peut pas être provisionnée sans authentification au compte Railway. Après `npm run railway:login`, exécuter `npm run railway:bootstrap`, confirmer le plan puis `npm run railway:verify`.
+- `VITE_API_URL` est injecté au build : tout changement de domaine API exige un redeploy du frontend.
+- Les fichiers `.env` restent hors Git. Le script n'envoie qu'une liste blanche de secrets et exclut explicitement le `DATABASE_URL` local.
+- Omettre une ressource de `.railway/railway.ts` peut la supprimer lors du prochain `config apply` : toujours relire le plan.
+
+---
+
 ### 23. Session mobile conservée après un refus JWT 401
 
 ### Contexte

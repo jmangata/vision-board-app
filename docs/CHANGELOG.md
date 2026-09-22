@@ -1,5 +1,43 @@
 # Changelog — Fonctionnalités
 
+## Automatisation complète du déploiement Railway
+
+### Contexte
+Le projet devait pouvoir être déployé sur Railway de manière reproductible, sans recopier manuellement les variables, les domaines et les commandes entre le dépôt et le dashboard.
+
+### Erreur ou comportement attendu
+La configuration Railway précédente reposait sur des fichiers `railway.toml` dépréciés et sur un workflow GitHub Actions exécutant `railway up` séparément pour le backend et le frontend. Elle ne provisionnait pas PostgreSQL, ne créait pas les domaines publics et ne disposait d'aucune vérification automatique après déploiement. Le frontend n'avait pas de serveur HTTP de production valide pour Railway.
+
+### Cause
+Railway avait été traité comme Render, alors que Railway déploie des conteneurs et que sa configuration projet actuelle repose sur Infrastructure as Code. Les URLs publiques générées par Railway avaient été supposées statiques au lieu d'être découvertes depuis la plateforme.
+
+### Solution apportée
+- Fichiers concernés : `.railway/railway.ts`, `frontend/Dockerfile`, `frontend/Caddyfile`, `frontend/.dockerignore`, `backend/package.json`, `package.json`, `package-lock.json`, `scripts/railway-bootstrap.mjs`, `scripts/railway-secrets.mjs`, `scripts/railway-verify.mjs`, `.github/workflows/ci.yml`, `mobile/.env.example`, `mobile/src/screens/LoginScreen.js`, `mobile/src/screens/ProfileScreen.js`, `docs/RAILWAY.md`, `docs/TROUBLESHOOTING.md`, `docs/CHANGELOG.md` ; suppression de `backend/railway.toml`, `frontend/railway.toml` et `.github/workflows/cd-railway.yml`.
+- Infrastructure as Code crée et relie PostgreSQL, l'API et le frontend dans un seul projet Railway.
+- Caddy sert le build Vite, applique le fallback React Router et expose `/health`.
+- Les migrations Prisma s'exécutent en pre-deploy et utilisent la version verrouillée du lockfile via `npm run`.
+- `scripts/railway-bootstrap.mjs` automatise le projet, l'infrastructure, les domaines, les secrets, la configuration mobile et les redéploiements.
+- `scripts/railway-secrets.mjs` envoie une liste blanche de 11 secrets via stdin.
+- `scripts/railway-verify.mjs` valide l'API, le frontend, le fallback SPA et CORS.
+- Wait for CI est activé nativement sur les services Railway et la CI s'exécute désormais aussi sur `main`.
+
+### Vérification
+- Build et exécution locale du conteneur frontend : OK.
+- Routes `/`, `/health`, `/goals/123` et asset JavaScript : OK.
+- Injection de `VITE_API_URL` dans le bundle : OK.
+- Génération Prisma 5.22.0 : OK.
+- 21 tests backend : OK.
+- Audit npm racine : 0 vulnérabilité.
+- Détection des 11 secrets en mode dry-run, sans fuite de valeur : OK.
+- Syntaxe des trois scripts Node : OK.
+
+### Points de vigilance
+- Le provisionnement réel nécessite une authentification personnelle par `npm run railway:login`, puis `npm run railway:bootstrap`.
+- Le plan IaC doit être relu avant confirmation : une ressource retirée du fichier peut être supprimée sur Railway.
+- Le déploiement n'est considéré terminé qu'après `npm run railway:verify` avec 4 contrôles sur 4 réussis.
+
+---
+
 ## Ajout d'un plan de soutenance CDA et d'un skill Devin de préparation
 
 ### Contexte

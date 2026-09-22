@@ -10,3 +10,4 @@ build/
 backend/.env
 frontend/.env
 dist-check/
+.tools/

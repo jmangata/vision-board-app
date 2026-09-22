@@ -3,19 +3,16 @@ name: CI
 # =============================================================================
 # Déclencheurs du workflow CI
 # =============================================================================
-# - push sur toutes les branches SAUF main : vérifie chaque commit poussé
-#   sur une branche de fonctionnalité.
+# - push sur TOUTES les branches, y compris main : indispensable car Railway
+#   utilise la fonctionnalité « Wait for CI » (checkSuites dans
+#   .railway/railway.ts) — le déploiement d'un push sur main attend que les
+#   check suites de ce commit soient vertes. Sans exécution sur main, il n'y
+#   aurait aucune check suite à attendre.
 # - pull_request vers main : vérifie chaque PR avant merge.
-# - workflow_call : permet au workflow CD (.github/workflows/cd.yml) de
-#   réutiliser ce fichier. Cela évite de dupliquer les jobs de vérification.
-#
-# La branche main est volontairement ignorée ici car le workflow CD
-# appelle cette CI une seule fois, puis déploie. Sans cela, la CI serait
-# lancée deux fois à chaque push sur main.
+# - workflow_call : permet à un autre workflow de réutiliser ces checks.
 # =============================================================================
 on:
-  push:
-    branches-ignore: [main]
+  push: {}
   pull_request:
     branches: [main]
   workflow_call:

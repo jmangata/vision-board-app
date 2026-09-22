@@ -47,8 +47,8 @@ Le jury doit pouvoir cocher les 11 compétences du référentiel. Toute compéte
 | Compétence | Couverture dans Vision Board |
 |---|---|
 | Préparer et exécuter les plans de tests | Vitest + Supertest, 21 tests (`backend/tests/api.test.js`, `badgeService.test.js`, `streak.test.js`) |
-| Préparer et documenter le déploiement | `docs/RAILWAY.md`, `docs/DEPLOYMENT.md`, `backend/railway.toml`, `frontend/railway.toml` |
-| Contribuer à la mise en production dans une démarche DevOps | `.github/workflows/ci.yml`, `.github/workflows/cd-railway.yml`, migrations Prisma au build |
+| Préparer et documenter le déploiement | `docs/RAILWAY.md`, `.railway/railway.ts`, `frontend/Dockerfile`, `frontend/Caddyfile` |
+| Contribuer à la mise en production dans une démarche DevOps | `.github/workflows/ci.yml`, Wait for CI Railway (`checkSuites`), migrations Prisma en pre-deploy |
 
 ---
 
@@ -204,8 +204,8 @@ Second exemple possible : le job de rappels (`reminderJob.js`) avec `node-cron` 
 
 #### 12. Déploiement et DevOps (2 min)
 - Environnements : local (Docker PostgreSQL port 5433) et production (Railway).
-- Infrastructure as code : `backend/railway.toml` et `frontend/railway.toml` versionnés.
-- Pipeline : push sur `main` → CI (tests backend + build frontend) → déploiement backend avec migrations Prisma → déploiement frontend.
+- Infrastructure as Code : `.railway/railway.ts` provisionne PostgreSQL, l'API et le frontend ; `frontend/Dockerfile` décrit le build multi-stage Vite/Caddy.
+- Pipeline : push sur `main` → CI (tests backend + build frontend) → Wait for CI Railway → migrations Prisma en pre-deploy → auto-déploiement des services.
 - Gestion des secrets : variables d'environnement côté plateforme, jamais dans Git.
 - Healthcheck `/api/health` pour valider le démarrage avant routage du trafic.
 
@@ -366,7 +366,7 @@ Un healthcheck sur `/api/health` doit répondre avant que le trafic soit routé,
 La plateforme conserve les déploiements précédents et permet un rollback. Côté base, les migrations étant incrémentales, un retour arrière demande une migration corrective, pas une suppression.
 
 **Qu'est-ce que la démarche DevOps dans ton projet ?**
-L'automatisation de la chaîne entre le commit et la production, l'infrastructure décrite dans des fichiers versionnés (`railway.toml`), et le fait que les tests conditionnent le déploiement.
+L'automatisation de la chaîne entre le commit et la production, l'infrastructure décrite dans `.railway/railway.ts`, et le fait que Wait for CI empêche tout déploiement tant que les tests GitHub Actions ne sont pas validés.
 
 ### 4.11 Questions transverses fréquentes
 

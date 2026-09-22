@@ -7,6 +7,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { login as loginApi } from '../services/authService';
 import { useAuth } from '../context/AuthContext';
 
+const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || 'http://localhost:5173';
+
 export default function LoginScreen({ navigation }) {
   // État local du formulaire et des éventuels messages d'erreur.
   const [form, setForm] = useState({ email: '', password: '' });
@@ -51,7 +53,7 @@ export default function LoginScreen({ navigation }) {
           <TextInput style={styles.input} placeholder="name@example.com" placeholderTextColor="#737781" keyboardType="email-address" autoCapitalize="none" autoCorrect={false} value={form.email} onChangeText={(email) => setForm({ ...form, email })} editable={!loading} />
           <Text style={styles.label}>Mot de passe</Text>
           <TextInput style={styles.input} placeholder="••••••••" placeholderTextColor="#737781" secureTextEntry value={form.password} onChangeText={(password) => setForm({ ...form, password })} editable={!loading} onSubmitEditing={handleSubmit} />
-          <TouchableOpacity onPress={() => Linking.openURL('https://visionboard-frontend.up.railway.app/forgot-password')}>
+          <TouchableOpacity onPress={() => Linking.openURL(`${WEB_URL}/forgot-password`)}>
             <Text style={styles.forgotLink}>Mot de passe oublié ?</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.button, loading && styles.disabled]} onPress={handleSubmit} disabled={loading}>
