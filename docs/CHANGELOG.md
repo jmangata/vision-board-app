@@ -1,5 +1,36 @@
 # Changelog — Fonctionnalités
 
+## Optimisation responsive du frontend déployé
+
+### Contexte
+Le frontend de production Railway paraissait trop agrandi sur ordinateur et sur téléphone, en particulier sur le Board, la navigation, le formulaire de création, les statistiques, les badges et le profil.
+
+### Erreur ou comportement attendu
+Sur desktop, le Board et la navigation inférieure perdaient toute largeur maximale dès le breakpoint `md`, ce qui étirait les composants sur toute la fenêtre. Plusieurs pages n'avaient aucun conteneur central et le formulaire de création utilisait des champs et boutons de 80 px de haut. Sur mobile, le navigateur pouvait aussi appliquer un ajustement automatique de taille de texte. L'interface doit conserver une densité lisible, une largeur contrôlée et des cibles tactiles suffisantes sur toutes les tailles d'écran.
+
+### Cause
+Les classes responsive utilisaient `md:max-w-none` et `md:max-w-none` sur les éléments structurants, tandis que les pages Dashboard, Badges et Profile ne fixaient aucune largeur maximale. Les contrôles principaux de `CreateGoal.jsx` utilisaient systématiquement `h-20` et `text-lg`. Aucune règle globale `text-size-adjust` ne stabilisait le rendu mobile.
+
+### Solution apportée
+- Fichiers concernés : `frontend/index.css`, `frontend/src/components/BottomNav.jsx`, `frontend/src/pages/Board.jsx`, `CreateGoal.jsx`, `Dashboard.jsx`, `Badges.jsx`, `Profile.jsx`, `GoalDetail.jsx`, `docs/CHANGELOG.md`.
+- Stabilisation de la taille du texte mobile avec `text-size-adjust: 100%` et suppression du débordement horizontal global.
+- Board limité à `max-w-7xl`, navigation desktop à `max-w-5xl` avec hauteur et icônes réduites.
+- Dashboard et Badges centrés dans `max-w-5xl`, Profil dans `max-w-2xl`, détail d'objectif dans `max-w-3xl`.
+- Dashboard adapté à quatre colonnes sur grand écran.
+- Formulaire de création élargi à `max-w-2xl`, avec champs et boutons réduits de 80 à 64 px et espaces verticaux resserrés.
+
+### Vérification
+- `npm run build` dans `frontend/` : build Vite 6.4.3 réussi, 110 modules transformés.
+- Build Docker de production avec injection de `VITE_API_URL` : réussi.
+- Aperçu local disponible sur desktop et via les outils responsive du navigateur.
+
+### Points de vigilance
+- Railway ne modifie pas le niveau de zoom du navigateur : si une seule origine paraît encore agrandie, réinitialiser le zoom du navigateur à 100 % (`Ctrl+0`).
+- Les tailles tactiles restent supérieures aux 44 px recommandés malgré la réduction visuelle.
+- Le renommage du service Railway est traité séparément car remplacer une ressource gérée par l'IaC peut entraîner une interruption temporaire et un changement de domaine.
+
+---
+
 ## Automatisation complète du déploiement Railway
 
 ### Contexte

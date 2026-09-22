@@ -189,7 +189,7 @@ const handleSuggestSteps = async () => {
 
   return (
     <div className="min-h-screen bg-background pb-28">
-      <header className="fixed top-0 z-50 flex h-20 w-full items-center justify-between bg-surface/90 px-7 shadow-soft backdrop-blur-md">
+      <header className="fixed top-0 z-50 flex h-16 w-full items-center justify-between bg-surface/90 px-5 shadow-soft backdrop-blur-md sm:px-7">
         <Link to="/" className="flex h-10 w-10 items-center justify-start text-primary">
           <span className="material-symbols-outlined text-3xl">close</span>
         </Link>
@@ -197,14 +197,14 @@ const handleSuggestSteps = async () => {
         <div className="w-6" />
       </header>
 
-      <main className="mx-auto max-w-lg px-7 pt-28">
-        <form id="goal-form" onSubmit={handleSubmit} className="flex flex-col gap-8">
+      <main className="mx-auto w-full max-w-2xl px-5 pt-24 sm:px-7">
+        <form id="goal-form" onSubmit={handleSubmit} className="flex flex-col gap-6">
           {error && <p className="order-[6] rounded-xl bg-error-container px-4 py-3 text-sm font-medium text-error">{error}</p>}
           <div className="order-1">
             <label className="mb-3 block text-base font-semibold text-outline">Titre de l'objectif</label>
             <input
               placeholder="Ex: Courir un marathon"
-              className="h-20 w-full rounded-2xl border-0 bg-surface-container-low px-5 text-lg font-medium text-on-surface outline-none ring-primary-container transition-shadow focus:ring-2"
+              className="h-16 w-full rounded-2xl border-0 bg-surface-container-low px-4 text-base font-medium text-on-surface outline-none ring-primary-container transition-shadow focus:ring-2"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
@@ -342,7 +342,7 @@ const handleSuggestSteps = async () => {
             <label className="mb-3 block text-base font-semibold text-outline">Date d'échéance (optionnel)</label>
             <input
               type="date"
-              className="h-20 w-full rounded-2xl border-0 bg-surface-container-low px-5 text-lg font-medium text-on-surface outline-none ring-primary-container focus:ring-2"
+              className="h-16 w-full rounded-2xl border-0 bg-surface-container-low px-4 text-base font-medium text-on-surface outline-none ring-primary-container focus:ring-2"
               value={form.targetDate}
               onChange={(e) => setForm({ ...form, targetDate: e.target.value })}
             />
@@ -356,7 +356,7 @@ const handleSuggestSteps = async () => {
     type="button"
     onClick={handleSuggestSteps}
     disabled={loadingSuggestions}
-    className="mb-3 flex h-20 w-full items-center justify-center gap-2 rounded-full bg-surface-container text-lg font-bold text-primary-container shadow-soft transition-transform active:scale-[0.98] disabled:opacity-70"
+    className="mb-3 flex h-16 w-full items-center justify-center gap-2 rounded-full bg-surface-container text-base font-bold text-primary-container shadow-soft transition-transform active:scale-[0.98] disabled:opacity-70"
   >
     <span className="material-symbols-outlined">auto_awesome</span>
     {loadingSuggestions ? 'Chargement...' : 'Suggérer des étapes'}
@@ -390,7 +390,7 @@ const handleSuggestSteps = async () => {
           <button
             type="submit"
             disabled={loading}
-            className="order-8 flex h-20 w-full items-center justify-center gap-2 rounded-full bg-primary-container text-lg font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-70"
+            className="order-8 flex h-16 w-full items-center justify-center gap-2 rounded-full bg-primary-container text-base font-bold text-white shadow-lg transition-transform active:scale-[0.98] disabled:opacity-70"
           >
             {loading ? 'Création...' : "Créer l'objectif"}
             <span className="material-symbols-outlined">auto_awesome</span>

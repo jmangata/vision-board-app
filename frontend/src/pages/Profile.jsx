@@ -71,7 +71,7 @@ function Profile() {
   const memberSince = new Date(user.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
 
   return (
-    <div className="px-5 pt-6 pb-28">
+    <div className="mx-auto w-full max-w-2xl px-5 pb-28 pt-6 md:px-8 md:pt-8">
       <h1 className="text-2xl font-bold text-primary mb-6">Mon Profil</h1>
 
       <div className="card p-6 flex flex-col items-center mb-6">

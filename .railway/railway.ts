@@ -27,8 +27,8 @@ export default defineRailway(() => {
       NODE_ENV: "production",
       DATABASE_URL: db.env.DATABASE_URL,
       JWT_EXPIRES_IN: "7d",
-      ALLOWED_ORIGINS: "https://${{web.RAILWAY_PUBLIC_DOMAIN}}",
-      FRONTEND_URL: "https://${{web.RAILWAY_PUBLIC_DOMAIN}}",
+      ALLOWED_ORIGINS: "https://${{vision-board.RAILWAY_PUBLIC_DOMAIN}}",
+      FRONTEND_URL: "https://${{vision-board.RAILWAY_PUBLIC_DOMAIN}}",
       JWT_SECRET: preserve(),
       CLOUDINARY_CLOUD_NAME: preserve(),
       CLOUDINARY_API_KEY: preserve(),
@@ -43,7 +43,7 @@ export default defineRailway(() => {
     },
   });
 
-  const web = service("web", {
+  const web = service("vision-board", {
     source: github(REPO, {
       branch: "main",
       rootDirectory: "frontend",

@@ -89,7 +89,7 @@ function Board() {
       : goals.filter((goal) => goal.category?.id === activeCategory);
 
   return (
-    <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28 md:max-w-none">
+    <div className="mx-auto min-h-screen w-full max-w-md bg-background pb-28 md:max-w-7xl">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between bg-surface-container-lowest px-5 shadow-soft md:hidden">
         <button type="button" className="flex h-10 w-10 items-center text-primary" aria-label="Ouvrir le menu">
           <span className="material-symbols-outlined">menu</span>

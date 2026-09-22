@@ -116,7 +116,7 @@ async function main() {
 
   console.log('\nConfiguration des domaines publics...');
   const apiDomain = ensureDomain('api');
-  const webDomain = ensureDomain('web');
+  const webDomain = ensureDomain('vision-board');
 
   writeFileSync(
     new URL('../mobile/.env', import.meta.url),
@@ -130,12 +130,12 @@ async function main() {
   console.log('\nAttente de la liberation des deploiements initiaux...');
   await Promise.all([
     waitForDeploymentUnlock('api'),
-    waitForDeploymentUnlock('web'),
+    waitForDeploymentUnlock('vision-board'),
   ]);
 
   console.log('\nRedeploiement final...');
   railway(['redeploy', '--service', 'api', '--yes']);
-  railway(['redeploy', '--service', 'web', '--yes']);
+  railway(['redeploy', '--service', 'vision-board', '--yes']);
 
   console.log('\n=== Deploiement lance avec succes ===\n');
   console.log(`API      : https://${apiDomain}/api/health`);

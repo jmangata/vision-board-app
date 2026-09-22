@@ -35,7 +35,7 @@ async function check(label, url, validate, options = {}) {
 
 async function main() {
   const apiDomain = domain('api');
-  const webDomain = domain('web');
+  const webDomain = domain('vision-board');
   const apiUrl = `https://${apiDomain}`;
   const webUrl = `https://${webDomain}`;
 

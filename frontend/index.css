@@ -4,9 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
-  @apply bg-background text-on-surface font-sans antialiased;
+  @apply overflow-x-hidden bg-background text-on-surface font-sans antialiased;
   -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 input:focus, textarea:focus, select:focus {

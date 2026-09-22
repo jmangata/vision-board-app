@@ -159,7 +159,7 @@ function GoalDetail() {
         </button>
       </header>
 
-      <main className="mt-16 px-5">
+      <main className="mx-auto mt-16 w-full max-w-3xl px-4 sm:px-5">
         <div className="relative w-full h-64 overflow-hidden bg-surface-container rounded-3xl shadow-lg">
           {goal.imageUrl ? (
             <img src={goal.imageUrl} alt={goal.title} className="w-full h-full object-cover" />
@@ -252,7 +252,7 @@ function GoalDetail() {
           </div>
         )}
 
-        <section className="px-5 mt-6">
+        <section className="mt-6 sm:px-1">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-lg font-semibold text-on-surface">Étapes</h3>
             <span className="text-xs text-outline">{completed} sur {total} étape(s) terminée(s)</span>

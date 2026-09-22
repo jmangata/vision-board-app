@@ -21,7 +21,7 @@ function Badges() {
   }, []);
 
   return (
-    <div className="px-5 pt-6 pb-28">
+    <div className="mx-auto w-full max-w-5xl px-5 pb-28 pt-6 md:px-8 md:pt-8">
       <h1 className="text-2xl font-bold text-primary mb-6">Badges</h1>
        <p className="text-sm text-outline mt-1">
     Atteins des objectifs et crée des habitudes pour débloquer de nouveaux badges.
