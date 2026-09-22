@@ -1,5 +1,34 @@
 # Changelog — Fonctionnalités
 
+## Ajout d'un plan de soutenance CDA et d'un skill Devin de préparation
+
+### Contexte
+Le projet sert de support à l'examen du titre professionnel Concepteur Développeur d'Applications (RNCP37873). La documentation existante (`docs/SOUTENANCE.md`) couvrait uniquement le scénario de démonstration et quelques questions de jury, sans lien explicite avec les 11 compétences du référentiel ni avec le format réel de l'épreuve.
+
+### Erreur ou comportement attendu
+`docs/SOUTENANCE.md` ne permettait pas de vérifier que chaque compétence du référentiel était couverte par le projet, ne proposait aucun minutage pour la présentation de 40 minutes et ne préparait pas l'entretien technique de 45 minutes. Le document mentionnait par ailleurs encore un déploiement sur Render, devenu faux après la migration vers Railway.
+
+### Cause
+Le document avait été rédigé avant la consolidation du projet et sans s'appuyer sur le référentiel officiel RNCP37873 (3 blocs de compétences, 11 compétences, épreuve en 4 parties pour 2 h 15).
+
+### Solution apportée
+- Fichiers concernés : `docs/SOUTENANCE-CDA.md` (nouveau), `.devin/skills/preparation-soutenance/SKILL.md` (nouveau), `.devin/AGENTS.md`, `docs/CHANGELOG.md`.
+- `docs/SOUTENANCE-CDA.md` : plan complet structuré en 7 sections — format officiel de l'épreuve, cartographie des 11 compétences vers les fichiers réels du projet, plan minuté de la présentation de 40 min (13 sections), banque de questions/réponses pour l'entretien technique de 45 min organisée par compétence, préparation du questionnaire professionnel, analyse des points faibles avec plan d'action, checklist du jour J.
+- `.devin/skills/preparation-soutenance/SKILL.md` : skill Devin exposant 5 modes de travail (simulation de jury question par question, révision par compétence, relecture du dossier et du diaporama, chronométrage de la présentation, entraînement au questionnaire bilingue). Le skill impose de vérifier chaque affirmation dans le code et fournit un tableau des approximations techniques à corriger systématiquement.
+- `.devin/AGENTS.md` : ajout d'une section renvoyant vers le skill et le plan, avec deux règles de fond (ancrage dans le code réel, refus de valider les approximations).
+
+### Vérification
+- Le skill `preparation-soutenance` est bien détecté par l'outil de skills et listé comme disponible.
+- Les chemins de fichiers cités dans le plan ont été vérifiés dans le dépôt : `backend/src/services/badgeService.js`, `backend/src/jobs/reminderJob.js`, `backend/tests/` (3 fichiers de tests), `backend/prisma/migrations/` (3 migrations), `frontend/src/pages/` (11 pages), `mobile/src/screens/` (8 écrans).
+- Le format de l'épreuve a été recoupé avec le référentiel d'évaluation officiel : présentation 40 min, entretien technique 45 min, questionnaire professionnel 30 min, entretien final 20 min.
+
+### Points de vigilance
+- Trois écarts par rapport au référentiel sont documentés et doivent être traités avant l'examen : l'application n'est pas déployée en production (compétences 10 et 11), aucun composant NoSQL n'est présent alors que la compétence 8 mentionne « SQL et NoSQL », et le frontend n'a pas de tests unitaires (compétence 9).
+- `docs/SOUTENANCE.md`, `docs/DEPLOYMENT.md` et `docs/conception.md` mentionnent encore Render et devront être harmonisés pour éviter une incohérence relevée par le jury.
+- `docs/SOUTENANCE.md` est conservé : il reste utile pour le scénario de démonstration et les questions spécifiques au mobile. `docs/SOUTENANCE-CDA.md` est le document de référence pour la structure de l'épreuve.
+
+---
+
 ## Migration de l'hébergement de Render vers Railway
 
 ### Contexte
